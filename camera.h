@@ -72,12 +72,18 @@ private:
         hit_record rec;
         if (world.hit(r, interval(0, infinity), rec))
         {
-            return 0.5 * (rec.normal + color(1, 1, 1));
+            // Red sphere
+            // return vec3(1, 0.0, 0.0);
+            // Normals sphere
+            // return 0.5 * (rec.normal + color(1, 1, 1));
+            // Actual raycasting
+            vec3 direction = random_on_hemisphere(rec.normal);
+            return 0.5 * ray_color(ray(rec.p, direction), world);
         }
 
         vec3 unit_direction = unit_vector(r.direction());
         double a = 0.5 * (unit_direction.y() + 1.0); // scale from (-1, 1) to (0, 1)
-        return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+        return (1.0 - a) * color(1.0, 0.0, 0.0) + a * color(0.5, 0.7, 1.0);
     }
 
     ray get_ray(int i, int j)

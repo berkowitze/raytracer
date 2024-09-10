@@ -5,7 +5,7 @@ Windows: Use Visual Studio
 Mac:
 
 ```
-g++ -std=c++11 -o raytracer Raytracer.cpp
+g++ -std=c++20 -o raytracer Raytracer.cpp
 ```
 
 ## Using
