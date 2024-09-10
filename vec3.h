@@ -63,6 +63,13 @@ public:
 	{
 		return vec3(random_double(min, max), random_double(min, max), random_double(min, max));
 	}
+
+	bool near_zero() const
+	{
+		// return whether every dimension is close to zero
+		float d = 1e-8;
+		return std::fabs(e[0]) < d && std::fabs(e[1]) < d && std::fabs(e[2]) < d;
+	}
 };
 
 using point3 = vec3;
@@ -139,6 +146,20 @@ inline vec3 random_on_hemisphere(const vec3 &normal)
 		return on_unit_sphere;
 	else
 		return -on_unit_sphere;
+}
+
+inline vec3 reflect(const vec3 &v, const vec3 &normal)
+{
+	// Great explanation: https://raytracing.github.io/books/RayTracingInOneWeekend.html#metal/mirroredlightreflection
+	return v - 2 * dot(v, normal) * normal;
+}
+
+inline vec3 refract(const vec3 &v, const vec3 &normal, double refractive_index_ratio)
+{
+	double cos_theta = std::fmin(dot(-v, normal), 1.0);
+	vec3 ray_out_perp = refractive_index_ratio * (v + cos_theta * normal);
+	vec3 ray_out_parallel = -std::sqrt(std::fabs(1.0 - ray_out_perp.length_squared())) * normal;
+	return ray_out_perp + ray_out_parallel;
 }
 
 #endif

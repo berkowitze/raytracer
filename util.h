@@ -41,5 +41,6 @@ inline double random_double(double max)
 #include "ray.h"
 #include "vec3.h"
 #include "camera.h"
+#include "material.h"
 
 #endif

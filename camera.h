@@ -2,6 +2,7 @@
 #define CAMERA_H
 
 #include "hittable.h"
+#include "material.h"
 
 class camera
 {
@@ -9,6 +10,7 @@ public:
     double aspect_ratio = 1.0; // width to height ratio
     int image_width = 100;
     int samples_per_pixel = 10;
+    int max_depth = 10; // max number of bounces for each ray
 
     void render(const hittable &world)
     {
@@ -26,7 +28,7 @@ public:
                 for (int sample = 0; sample < samples_per_pixel; sample++)
                 {
                     ray r = get_ray(i, j);
-                    pixel_color += ray_color(r, world);
+                    pixel_color += ray_color(r, world, max_depth);
                 }
 
                 write_color(std::cout, pixel_color / samples_per_pixel);
@@ -67,23 +69,47 @@ private:
         pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
     }
 
-    color ray_color(const ray &r, const hittable &world) const
+    color ray_color(const ray &r, const hittable &world, int bounces_remaining) const
     {
+        if (bounces_remaining <= 0)
+        {
+            return color();
+        }
+
         hit_record rec;
-        if (world.hit(r, interval(0, infinity), rec))
+        // Ignore very close intersections since that could be "shadow acne" (close intersections due to rounding error)
+        if (world.hit(r, interval(0.001, infinity), rec))
         {
             // Red sphere
             // return vec3(1, 0.0, 0.0);
             // Normals sphere
             // return 0.5 * (rec.normal + color(1, 1, 1));
-            // Actual raycasting
-            vec3 direction = random_on_hemisphere(rec.normal);
-            return 0.5 * ray_color(ray(rec.p, direction), world);
+            // -- Actual raycasting --
+            // Cast randomly along hemisphere - random scatter direction
+            // vec3 direction = random_on_hemisphere(rec.normal);
+            // Lambertian diffuse
+            // vec3 direction = rec.normal + random_unit_vector();
+
+            // Use hit objects' material
+            ray scattered_ray;
+            color attenuation;
+
+            bool scatters = rec.mat->scatter(r, rec, attenuation, scattered_ray);
+            if (scatters)
+            {
+                return attenuation * ray_color(scattered_ray, world, bounces_remaining - 1);
+            }
+            else
+            {
+                // If a ray hits an object and doesn't scatter, that means it was absorbed and so the
+                // material is "acting" black.
+                return color();
+            }
         }
 
         vec3 unit_direction = unit_vector(r.direction());
         double a = 0.5 * (unit_direction.y() + 1.0); // scale from (-1, 1) to (0, 1)
-        return (1.0 - a) * color(1.0, 1.0, 0.0) + a * color(0.5, 0.7, 1.0);
+        return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
     }
 
     ray get_ray(int i, int j)

@@ -19,8 +19,8 @@ clean:
 	rm -f $(OUT)
 
 run:
-	sh -c 'rm raytracer && make && ./raytracer > out.ppm && open -g out.ppm && tput bel'
+	sh -c 'rm -f raytracer && make && ./raytracer > out.ppm && open -g out.ppm && tput bel'
 
 watch:
 	@make run
-	fswatch -o *.cpp *.h  | xargs -n1 sh -c 'rm raytracer && make && ./raytracer > out.ppm && open -g out.ppm && tput bel'
+	fswatch -o *.cpp *.h  | xargs -n1 sh -c 'rm -f raytracer && make && ./raytracer > out.ppm && open -g out.ppm && tput bel'
