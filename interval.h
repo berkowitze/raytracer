@@ -1,32 +1,37 @@
 #ifndef INTERVAL_H
 #define INTERVAL_H
 
-class interval {
+class interval
+{
 public:
 	double min, max;
 	// use an empty interval by default
 	interval() : min(infinity), max(-infinity) {}
 	interval(double min, double max) : min(min), max(max) {}
 
-
-	double size() const {
+	double size() const
+	{
 		return max - min;
 	}
 
-	bool contains(double x) {
+	bool contains(double x)
+	{
 		return x >= min && x <= max;
 	}
 
-	bool surrounds(double x) const {
+	bool surrounds(double x) const
+	{
 		return x > min && x < max;
 	}
 
-	double clamp(double x) const {
-		if (x < min) return min;
-		if (x > max) return max;
+	double clamp(double x) const
+	{
+		if (x < min)
+			return min;
+		if (x > max)
+			return max;
 		return x;
 	}
-
 
 	static const interval empty, universe;
 };
