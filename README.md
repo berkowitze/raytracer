@@ -27,5 +27,6 @@ Mac:
 Mac:
 
 ```
-fswatch -o *.cpp *.h  | xargs -n1 sh -c 'make && ./raytracer > out.ppm && open out.ppm'
+make run
+make watch
 ```
