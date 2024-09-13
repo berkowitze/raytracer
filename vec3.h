@@ -126,6 +126,15 @@ inline vec3 unit_vector(const vec3 &v)
 	return v / v.length();
 }
 
+inline vec3 random_in_unit_disk()
+{
+	double theta = random_double();
+	double radius = std::sqrt(random_double());
+	double x = radius * std::cos(theta);
+	double y = radius * std::sin(theta);
+	return vec3(x, y, 0);
+}
+
 inline vec3 random_unit_vector()
 {
 	while (true)

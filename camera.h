@@ -8,6 +8,14 @@ class camera
 {
 public:
     double aspect_ratio = 1.0; // width to height ratio
+    double vfov = 90;          // fov in degrees
+    point3 lookfrom = vec3(0, 0, 0);
+    point3 lookat = vec3(0, 0, -1);
+    point3 vup = vec3(0, 1, 0);
+
+    double defocus_angle = 0;   // angle of ray offset from lookfrom in the defocus disk, to the rendered pixel
+    double focus_distance = 10; // distance from lookfrom to plane of perfect focus
+
     int image_width = 100;
     int samples_per_pixel = 10;
     int max_depth = 10; // max number of bounces for each ray
@@ -42,29 +50,43 @@ private:
     point3 pixel00_loc;
     vec3 pixel_delta_u;
     vec3 pixel_delta_v;
+    vec3 u, v, w; // camera frame basis vectors
+    vec3 defocus_disk_u, defocus_disk_v;
 
     void initialize()
     {
         image_height = std::max(1, int(image_width / aspect_ratio));
+        camera_center = lookfrom;
 
         // Camera
-        camera_center = vec3();
-        auto focal_length = 1.0; // distance from camera_center to center of viewport
-        auto viewport_height = 2.0;
+        double vfov_rad = degrees_to_radians(vfov);
+        double h = std::tan(vfov_rad / 2);
+        double viewport_height = 2 * h * focus_distance;
         // Don't reuse aspect_ratio here, because the min() and int() used to calculate
         // the image_height makes the effective aspect ratio different. So recalculate
         // an aspect ratio.
         auto viewport_width = viewport_height * (double(image_width) / image_height);
 
+        w = unit_vector(lookfrom - lookat); // point opposite way of way camera is facing
+        u = unit_vector(cross(vup, w));
+        v = cross(w, u);
+
         // Vectors spanning axes of the viewport
-        vec3 viewport_u = vec3(viewport_width, 0, 0);
-        point3 viewport_v = point3(0, -viewport_height, 0);
+        vec3 viewport_u = viewport_width * u;
+        point3 viewport_v = viewport_height * -v; // go down viewport, not up (hence negative v)
 
         pixel_delta_u = viewport_u / image_width;  // vector for one pixel-step in the u direction
         pixel_delta_v = viewport_v / image_height; // vector for one pixel-step in the v direction
 
         // Go from camera center, to viewport (using focal_length), to left side, to top left side of viewport
-        vec3 viewport_upper_left = camera_center - vec3(0, 0, focal_length) - viewport_u / 2 - viewport_v / 2;
+        vec3 viewport_upper_left = lookfrom - (focus_distance * w) - viewport_u / 2 - viewport_v / 2;
+
+        // get basis vectors for defocus disk - first get radius of the disk
+        double defocus_radius = focus_distance * std::tan(degrees_to_radians(defocus_angle / 2));
+        // then reuse u and v to get the correct basis vectors
+        defocus_disk_u = u * defocus_radius;
+        defocus_disk_v = v * defocus_radius;
+
         // First pixel is half a (du, dv) from the top left
         pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
     }
@@ -114,12 +136,18 @@ private:
 
     ray get_ray(int i, int j)
     {
-        vec3 offset = sample_square();
-        vec3 sample_location = pixel00_loc + ((j + offset.y()) * pixel_delta_v) + ((i + offset.x()) * pixel_delta_u);
-        // No need to be a unit vector
-        vec3 ray_direction = sample_location - camera_center;
-        ray r(camera_center, ray_direction);
+        vec3 pixel_offset = sample_square();
+        vec3 sample_location = pixel00_loc + ((j + pixel_offset.y()) * pixel_delta_v) + ((i + pixel_offset.x()) * pixel_delta_u);
+        vec3 ray_origin = (defocus_angle <= 0) ? lookfrom : defocus_disk_sample();
+        vec3 ray_direction = sample_location - ray_origin;
+        ray r(ray_origin, ray_direction);
         return r;
+    }
+
+    vec3 defocus_disk_sample() const
+    {
+        vec3 p = random_in_unit_disk();
+        return camera_center + (p[0] * defocus_disk_u) + (p[1] * defocus_disk_v);
     }
 
     vec3 sample_square() const
