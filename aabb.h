@@ -72,6 +72,24 @@ public:
 
     return true;
   }
+
+  int largest_axis() const
+  {
+    if (x.size() > y.size() && x.size() > z.size())
+    {
+      return 0;
+    }
+    if (y.size() > x.size() && y.size() > z.size())
+    {
+      return 1;
+    }
+    return 2;
+  }
+
+  static const aabb empty, universe;
 };
+
+const aabb aabb::empty = aabb(interval::empty, interval::empty, interval::empty);
+const aabb aabb::universe = aabb(interval::universe, interval::universe, interval::universe);
 
 #endif

@@ -13,6 +13,15 @@ public:
 
   bvh_node(std::vector<shared_ptr<hittable>> &objects, size_t start, size_t end)
   {
+    bbox = aabb::empty;
+
+    for (size_t object_index = start; object_index < end; object_index++)
+    {
+      bbox = aabb(bbox, objects[object_index]->bounding_box());
+    }
+
+    int axis = bbox.largest_axis();
+
     // Recursively split into two areas along random orthonormal axes
     size_t object_span = end - start;
     if (object_span == 1)
@@ -26,7 +35,6 @@ public:
     }
     else
     {
-      int axis = random_int(0, 2);
       auto comparator = (axis == 0) ? box_x_compare : (axis == 1) ? box_y_compare
                                                                   : box_z_compare;
       std::sort(objects.begin() + start, objects.begin() + end, comparator);
@@ -35,7 +43,6 @@ public:
       left = make_shared<bvh_node>(objects, start, middle_index);
       right = make_shared<bvh_node>(objects, middle_index, end);
     }
-    bbox = aabb(left->bounding_box(), right->bounding_box());
   }
 
   bool hit(const ray &r, interval ray_t, hit_record &rec) const override

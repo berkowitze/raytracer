@@ -10,7 +10,7 @@ public:
     sphere(
         const point3 &center,
         double radius,
-        shared_ptr<material> mat) : center(ray(center, center)), radius(radius), mat(mat)
+        shared_ptr<material> mat) : center(ray(center, vec3())), radius(radius), mat(mat)
     {
         bbox = aabb(center - vec3(radius), center + vec3(radius));
     }

@@ -95,7 +95,7 @@ int main(int argc, char **argv)
     camera main_camera;
     main_camera.aspect_ratio = 16.0 / 9.0;
     main_camera.image_width = 400;
-    main_camera.samples_per_pixel = 200;
+    main_camera.samples_per_pixel = 75;
     main_camera.max_depth = 30;
     main_camera.vfov = 20;
     main_camera.defocus_angle = 0.6;

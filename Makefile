@@ -12,7 +12,7 @@ SRC = Raytracer.cpp
 # Output executable
 OUT = raytracer
 
-OUTPUT_FILE=out.ppm
+OUTPUT_FILE = out/$(shell date +%s).ppm
 
 # Rule for compiling the program
 $(OUT): $(SRC)
@@ -23,13 +23,17 @@ clean:
 	rm -f $(OUT)
 
 run:
-	sh -c 'rm -f raytracer && make && ./raytracer  $(FLAGS) > out.ppm && open -g out.ppm && tput bel'
+	sh -c 'rm -f raytracer && make && ./raytracer $(FLAGS) > $(OUTPUT_FILE) && open -g $(OUTPUT_FILE) && tput bel'
 
 watch:
 	@make run
-	fswatch -o *.cpp *.h  | xargs -n1 sh -c 'rm -f raytracer && make && ./raytracer  $(FLAGS) > out.ppm && open -g out.ppm && tput bel'
+	fswatch -o *.cpp *.h  | xargs -n1 sh -c 'rm -f raytracer && make && ./raytracer $(FLAGS) > $(OUTPUT_FILE) && open -g $(OUTPUT_FILE) && tput bel'
 
 output:
 	rm -f raytracer
 	make
-	time ./raytracer  $(FLAGS) > $(OUTPUT_FILE)
+	time ./raytracer $(FLAGS) > $(OUTPUT_FILE)
+
+	BASENAME=$(basename $(OUTPUT_FILE) .ppm)
+	convert $(OUTPUT_FILE) $$BASENAME.png
+
