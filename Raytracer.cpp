@@ -2,6 +2,7 @@
 #include "hittable.h"
 #include "hittable_list.h"
 #include "material.h"
+#include "bvh.h"
 #include "sphere.h"
 
 double lerp(double a, double b, double t)
@@ -9,7 +10,7 @@ double lerp(double a, double b, double t)
     return a + (b - a) * t;
 }
 
-int main()
+int main(int argc, char **argv)
 {
 
     hittable_list world;
@@ -38,7 +39,7 @@ int main()
 
     // world.add(make_shared<sphere>(point3(-sphere_radius, 0, -1), sphere_radius, material_left));
     // world.add(make_shared<sphere>(point3(sphere_radius, 0, -1), sphere_radius, material_right));
-
+    // Sphere scene
     auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
     world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, ground_material)); // ground is just a big sphere
 
@@ -49,6 +50,7 @@ int main()
             double mat_rng = random_double();
 
             point3 position = vec3(i + 0.9 * random_double(), 0.2 + random_double() * 0.1, j + 0.9 * random_double());
+            point3 end_position = position;
             double radius = random_double(0.1, 0.3);
 
             shared_ptr<material> sphere_material;
@@ -56,6 +58,7 @@ int main()
             if (mat_rng < 0.7)
             {
                 sphere_material = make_shared<lambertian>(color::random() * color::random());
+                end_position = position + vec3(0, random_double(0, 0.5), 0);
             }
             else if (mat_rng < 0.9)
             {
@@ -65,8 +68,7 @@ int main()
             {
                 sphere_material = make_shared<dielectric>(1.5);
             }
-
-            world.add(make_shared<sphere>(position, radius, sphere_material));
+            world.add(make_shared<sphere>(position, end_position, radius, sphere_material));
         }
     }
 
@@ -80,11 +82,21 @@ int main()
     auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
     world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
 
+    if (argc > 1 && std::string(argv[1]) == "--bvh")
+    {
+        std::clog << "Using BVH" << std::endl;
+        world = hittable_list(make_shared<bvh_node>(world));
+    }
+    else
+    {
+        std::clog << "Not using BVH" << std::endl;
+    }
+
     camera main_camera;
     main_camera.aspect_ratio = 16.0 / 9.0;
-    main_camera.image_width = 1920;
-    main_camera.samples_per_pixel = 500;
-    main_camera.max_depth = 50;
+    main_camera.image_width = 400;
+    main_camera.samples_per_pixel = 200;
+    main_camera.max_depth = 30;
     main_camera.vfov = 20;
     main_camera.defocus_angle = 0.6;
     main_camera.focus_distance = 10;

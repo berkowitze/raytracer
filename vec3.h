@@ -67,7 +67,7 @@ public:
 	bool near_zero() const
 	{
 		// return whether every dimension is close to zero
-		float d = 1e-8;
+		double d = 1e-8;
 		return std::fabs(e[0]) < d && std::fabs(e[1]) < d && std::fabs(e[2]) < d;
 	}
 };

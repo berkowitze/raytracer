@@ -32,7 +32,7 @@ public:
       // will that reflect too much light in just that one direction?
       scatter_direction = rec.normal;
     }
-    scattered_ray = ray(rec.p, scatter_direction);
+    scattered_ray = ray(rec.p, scatter_direction, r_in.time());
     attenuation = albedo;
     return true;
   }
@@ -48,11 +48,10 @@ public:
   bool scatter(
       const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered_ray) const override
   {
-    double fuzz_factor = 0.3;
     vec3 scatter_direction = reflect(r_in.direction(), rec.normal);
     scatter_direction.normalize();
     scatter_direction += (fuzz_factor * random_unit_vector());
-    scattered_ray = ray(rec.p, scatter_direction);
+    scattered_ray = ray(rec.p, scatter_direction, r_in.time());
     attenuation = albedo;
     // Make sure the scattered direction is not now on the opposite side of the surface
     return (dot(scattered_ray.direction(), rec.normal) > 0);
@@ -85,7 +84,7 @@ public:
     // At shallow angles, light reflects more often than is transmitted - hence the reflectance test
     vec3 refracted_direction = cannot_refract || reflectance(cos_theta, refractive_index_ratio) > random_double() ? reflect(unit_r_in_direction, rec.normal) : refract(unit_r_in_direction, rec.normal, refractive_index_ratio);
 
-    scattered = ray(rec.p, refracted_direction);
+    scattered = ray(rec.p, refracted_direction, r_in.time());
     return true;
   }
 

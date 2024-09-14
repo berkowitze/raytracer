@@ -8,7 +8,7 @@ class ray
 public:
 	ray() {}
 	ray(const point3 &origin, const vec3 &direction, double time) : orig(origin), dir(direction), _time(time) {}
-	ray(const point3 &origin, const vec3 &direction) : orig(origin), dir(direction) {}
+	ray(const point3 &origin, const vec3 &direction) : orig(origin), dir(direction), _time(0) {}
 
 	const point3 &origin() const { return orig; }
 	const vec3 &direction() const { return dir; }
@@ -20,9 +20,9 @@ public:
 	}
 
 private:
-	double _time = 0;
 	point3 orig;
 	vec3 dir;
+	double _time = 0;
 };
 
 #endif
