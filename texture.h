@@ -80,4 +80,20 @@ private:
   rtw_image image;
 };
 
+class noise_texture : public texture
+{
+public:
+  noise_texture() : noise_texture(1.0) {}
+  noise_texture(double scale) : scale(scale), perlin_generator() {}
+
+  color value(double u, double v, const point3 &p) const override
+  {
+    return color(perlin_generator.noise(p * scale));
+  }
+
+private:
+  double scale;
+  perlin perlin_generator;
+};
+
 #endif
