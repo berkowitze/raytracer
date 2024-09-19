@@ -1,6 +1,8 @@
 #ifndef HITTABLE_H
 #define HITTABLE_H
 
+#include "aabb.h"
+
 class material;
 
 class hit_record
@@ -11,6 +13,9 @@ public:
 	double t;									// "time" along ray that the hit occurred
 	bool front_face;					// whether the ray hit from the front side or back side of the face
 	shared_ptr<material> mat; // material at the intersection
+
+	double u;
+	double v;
 
 	void set_face_normal(const ray &r, const vec3 &outward_normal)
 	{

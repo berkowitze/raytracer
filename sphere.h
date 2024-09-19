@@ -54,6 +54,7 @@ public:
         rec.p = r.at(rec.t);
         rec.mat = mat;
         vec3 outward_normal = (rec.p - current_center) / radius;
+        get_sphere_uv(outward_normal, rec.u, rec.v);
         rec.set_face_normal(r, outward_normal);
         return true;
     }
@@ -68,6 +69,16 @@ private:
     double radius;
     shared_ptr<material> mat;
     aabb bbox;
+
+    // p should be on a point on the surface of a unit sphere
+    static void get_sphere_uv(const point3 &p, double &u, double &v)
+    {
+        double theta = std::acos(-p.y());
+        double phi = std::atan2(-p.z(), p.x()) + pi;
+
+        u = phi / (2 * pi);
+        v = theta / pi;
+    }
 };
 
 #endif

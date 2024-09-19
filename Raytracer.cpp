@@ -10,35 +10,9 @@ double lerp(double a, double b, double t)
     return a + (b - a) * t;
 }
 
-int main(int argc, char **argv)
+void lots_of_balls(int argc, char **argv)
 {
-
     hittable_list world;
-
-    // auto grayish = make_shared<lambertian>(color(0.4, 0.3, 0.4));
-    // auto reddish = make_shared<lambertian>(color(0.8, 0.3, 0.2));
-
-    // // auto material_left = make_shared<metal>(color(0.8, 0.8, 0.8), 0.3);
-    // auto material_left = make_shared<dielectric>(1.5);
-    // auto material_bubble = make_shared<dielectric>(1.0 / 1.3);
-    // auto metal_right = make_shared<metal>(color(0.8, 0.6, 0.2), 0.8);
-
-    // world.add(make_shared<sphere>(point3(0, 0, -1), 0.5, grayish));
-    // world.add(make_shared<sphere>(point3(0, -100.5, -1), 100, reddish));
-
-    // world.add(make_shared<sphere>(point3(-1, 0, -1), 0.5, material_left));
-    // world.add(make_shared<sphere>(point3(-1, 0, -1), 0.4, material_bubble));
-
-    // world.add(make_shared<sphere>(point3(1, 0, -1), 0.5, metal_right));
-
-    // double sphere_radius = std::cos(pi / 4);
-    // // blue
-    // auto material_left = make_shared<lambertian>(color(0, 0, 1));
-    // // red
-    // auto material_right = make_shared<lambertian>(color(1, 0, 0));
-
-    // world.add(make_shared<sphere>(point3(-sphere_radius, 0, -1), sphere_radius, material_left));
-    // world.add(make_shared<sphere>(point3(sphere_radius, 0, -1), sphere_radius, material_right));
     // Sphere scene
     auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
     world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, ground_material)); // ground is just a big sphere
@@ -71,6 +45,9 @@ int main(int argc, char **argv)
             world.add(make_shared<sphere>(position, end_position, radius, sphere_material));
         }
     }
+
+    auto checker = make_shared<checker_texture>(0.32, color(.2, .3, .1), color(.9, .9, .9));
+    world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(checker)));
 
     // Big spheres in the middle (copy-pasted code from https://raytracing.github.io/books/RayTracingInOneWeekend.html#positionablecamera)
     auto material1 = make_shared<dielectric>(1.5);
@@ -105,3 +82,97 @@ int main(int argc, char **argv)
 
     main_camera.render(world);
 }
+
+void checkered_spheres(int argc, char **argv)
+{
+    hittable_list world;
+
+    auto checker_tex = make_shared<checker_texture>(0.32, color(.1, .3, .2), color(.9));
+
+    world.add(make_shared<sphere>(point3(0, -10, 0), 10, make_shared<lambertian>(checker_tex)));
+    world.add(make_shared<sphere>(point3(0, 10, 0), 10, make_shared<lambertian>(checker_tex)));
+
+    camera cam;
+
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth = 50;
+
+    cam.vfov = 20;
+    cam.lookfrom = point3(13, 2, 3);
+    cam.lookat = point3(0, 0, 0);
+    cam.vup = vec3(0, 1, 0);
+
+    cam.defocus_angle = 0;
+
+    cam.render(world);
+}
+
+void fantasy_planet(int argc, char **argv)
+{
+    hittable_list world;
+
+    auto world_tex = make_shared<image_texture>("textures/Map-111.png");
+
+    world.add(make_shared<sphere>(point3(0, -10, 0), 10, make_shared<lambertian>(world_tex)));
+    world.add(make_shared<sphere>(point3(0, 10, 0), 10, make_shared<lambertian>(world_tex)));
+
+    camera cam;
+
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth = 50;
+
+    cam.vfov = 20;
+    cam.lookfrom = point3(60, 2, 3);
+    cam.lookat = point3(0, 0, 0);
+    cam.vup = vec3(0, 1, 0);
+
+    cam.defocus_angle = 0;
+
+    cam.render(world);
+}
+
+int main(int argc, char **argv)
+{
+    int scene = 3;
+    switch (scene)
+    {
+    case 1:
+        lots_of_balls(argc, argv);
+        break;
+    case 2:
+        checkered_spheres(argc, argv);
+        break;
+    case 3:
+        fantasy_planet(argc, argv);
+        break;
+    }
+}
+
+// auto grayish = make_shared<lambertian>(color(0.4, 0.3, 0.4));
+// auto reddish = make_shared<lambertian>(color(0.8, 0.3, 0.2));
+
+// // auto material_left = make_shared<metal>(color(0.8, 0.8, 0.8), 0.3);
+// auto material_left = make_shared<dielectric>(1.5);
+// auto material_bubble = make_shared<dielectric>(1.0 / 1.3);
+// auto metal_right = make_shared<metal>(color(0.8, 0.6, 0.2), 0.8);
+
+// world.add(make_shared<sphere>(point3(0, 0, -1), 0.5, grayish));
+// world.add(make_shared<sphere>(point3(0, -100.5, -1), 100, reddish));
+
+// world.add(make_shared<sphere>(point3(-1, 0, -1), 0.5, material_left));
+// world.add(make_shared<sphere>(point3(-1, 0, -1), 0.4, material_bubble));
+
+// world.add(make_shared<sphere>(point3(1, 0, -1), 0.5, metal_right));
+
+// double sphere_radius = std::cos(pi / 4);
+// // blue
+// auto material_left = make_shared<lambertian>(color(0, 0, 1));
+// // red
+// auto material_right = make_shared<lambertian>(color(1, 0, 0));
+
+// world.add(make_shared<sphere>(point3(-sphere_radius, 0, -1), sphere_radius, material_left));
+// world.add(make_shared<sphere>(point3(sphere_radius, 0, -1), sphere_radius, material_right));
