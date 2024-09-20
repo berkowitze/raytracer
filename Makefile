@@ -27,7 +27,7 @@ run:
 
 watch:
 	@make run
-	fswatch -o *.cpp *.h  | xargs -n1 sh -c 'rm -f raytracer && make && ./raytracer $(FLAGS) > $(OUTPUT_FILE) && open -g $(OUTPUT_FILE) && tput bel'
+	fswatch -o *.cpp *.h  | xargs -n1 make run
 
 output:
 	rm -f raytracer

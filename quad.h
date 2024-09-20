@@ -79,4 +79,25 @@ private:
   aabb bbox;
 };
 
+inline shared_ptr<hittable_list> box(const point3 &a, const point3 &b, shared_ptr<material> material)
+{
+  auto sides = make_shared<hittable_list>();
+
+  point3 min = point3(std::fmin(a.x(), b.x()), std::fmin(a.y(), b.y()), std::fmin(a.z(), b.z()));
+  point3 max = point3(std::fmax(a.x(), b.x()), std::fmax(a.y(), b.y()), std::fmax(a.z(), b.z()));
+
+  vec3 dx = vec3(max.x() - min.x(), 0, 0);
+  vec3 dy = vec3(max.y() - min.y(), 0, 0);
+  vec3 dz = vec3(max.z() - min.z(), 0, 0);
+
+  // these 6 lines copied from tutorial directly
+  sides->add(make_shared<quad>(point3(min.x(), min.y(), max.z()), dx, dy, material));  // front
+  sides->add(make_shared<quad>(point3(max.x(), min.y(), max.z()), -dz, dy, material)); // right
+  sides->add(make_shared<quad>(point3(max.x(), min.y(), min.z()), -dx, dy, material)); // back
+  sides->add(make_shared<quad>(point3(min.x(), min.y(), min.z()), dz, dy, material));  // left
+  sides->add(make_shared<quad>(point3(min.x(), max.y(), max.z()), dx, -dz, material)); // top
+  sides->add(make_shared<quad>(point3(min.x(), min.y(), min.z()), dx, dz, material));  // bottom
+  return sides;
+}
+
 #endif
