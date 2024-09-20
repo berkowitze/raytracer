@@ -60,6 +60,5 @@ inline double clamp(double min, double value, double max)
 #include "aabb.h"
 #include "bvh.h"
 #include "camera.h"
-#include "material.h"
 
 #endif

@@ -5,3 +5,4 @@ raytracer
 ./*.png
 .DS_Store
 *.jpeg
+out
