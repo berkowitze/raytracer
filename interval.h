@@ -50,5 +50,9 @@ public:
 
 const interval interval::empty = interval(infinity, -infinity);
 const interval interval::universe = interval(-infinity, infinity);
+interval operator+(const interval &i, double offset)
+{
+	return interval(i.min + offset, i.max + offset);
+}
 
 #endif

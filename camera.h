@@ -21,16 +21,27 @@ public:
     int samples_per_pixel = 10;
     int max_depth = 10; // max number of bounces for each ray
 
-    void render(const hittable &world)
+    void render(const hittable &world, int chunk)
     {
         initialize();
 
-        std::cout << "P3\n"
-                  << image_width << ' ' << image_height << "\n255\n";
-
-        for (int j = 0; j < image_height; j++)
+        if (chunk == -2)
         {
-            std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
+            std::cout << "P3\n"
+                      << image_width << ' ' << image_height << "\n255\n";
+            return;
+        }
+
+        int num_chunks = 20;
+        int rows_per_chunk = std::ceilf(image_height / num_chunks);
+        int chunk_start = chunk == -1 ? 0 : rows_per_chunk * chunk;
+        int chunk_end = chunk == -1 ? image_height : std::min(chunk_start + rows_per_chunk, image_height);
+        for (int j = chunk_start; j < chunk_end; j++)
+        {
+            if (chunk == -1)
+            {
+                std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
+            }
             for (int i = 0; i < image_width; i++)
             {
                 color pixel_color = color();
@@ -145,8 +156,7 @@ private:
         vec3 sample_location = pixel00_loc + ((j + pixel_offset.y()) * pixel_delta_v) + ((i + pixel_offset.x()) * pixel_delta_u);
         vec3 ray_origin = (defocus_angle <= 0) ? lookfrom : defocus_disk_sample();
         vec3 ray_direction = sample_location - ray_origin;
-        // double time = random_double();
-        double time = 0;
+        double time = random_double();
         ray r(ray_origin, ray_direction, time);
         return r;
     }
