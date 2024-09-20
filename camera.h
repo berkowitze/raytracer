@@ -12,6 +12,7 @@ public:
     point3 lookfrom = vec3(0, 0, 0);
     point3 lookat = vec3(0, 0, -1);
     point3 vup = vec3(0, 1, 0);
+    color background;
 
     double defocus_angle = 0;   // angle of ray offset from lookfrom in the defocus disk, to the rendered pixel
     double focus_distance = 10; // distance from lookfrom to plane of perfect focus
@@ -115,18 +116,22 @@ private:
             // Use hit objects' material
             ray scattered_ray;
             color attenuation;
+            color color_from_emission = rec.mat->emitted(rec.u, rec.v, rec.p);
 
             bool scatters = rec.mat->scatter(r, rec, attenuation, scattered_ray);
             if (scatters)
             {
-                return attenuation * ray_color(scattered_ray, world, bounces_remaining - 1);
+                color color_from_scatter = attenuation * ray_color(scattered_ray, world, bounces_remaining - 1);
+                return color_from_scatter + color_from_emission;
             }
             else
             {
-                // If a ray hits an object and doesn't scatter, that means it was absorbed and so the
-                // material is "acting" black.
-                return color();
+                return color_from_emission;
             }
+        }
+        else
+        {
+            return background;
         }
 
         vec3 unit_direction = unit_vector(r.direction());

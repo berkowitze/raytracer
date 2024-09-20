@@ -88,7 +88,9 @@ public:
 
   color value(double u, double v, const point3 &p) const override
   {
-    return color(perlin_generator.noise(p * scale));
+    return color(1) * 0.5 * (1.0 + perlin_generator.noise(p * scale));
+    // return color(1) * perlin_generator.turb(p, 7);
+    // return color(0.5) * (1 + std::sin(scale * p.z() + 10 * perlin_generator.turb(p + vec3(p.x(), 0, 0), 7)));
   }
 
 private:

@@ -8,7 +8,10 @@ public:
   interval x, y, z;
 
   aabb() {} // Default AABB is empty
-  aabb(const interval &x, const interval &y, const interval &z) : x(x), y(y), z(z) {}
+  aabb(const interval &x, const interval &y, const interval &z) : x(x), y(y), z(z)
+  {
+    pad_to_minimums();
+  }
   aabb(const aabb &bbox1, const aabb &bbox2)
   {
     x = interval(bbox1.x, bbox2.x);
@@ -21,6 +24,7 @@ public:
     x = a[0] < b[0] ? interval(a[0], b[0]) : interval(b[0], a[0]);
     y = a[1] < b[1] ? interval(a[1], b[1]) : interval(b[1], a[1]);
     z = a[2] < b[2] ? interval(a[2], b[2]) : interval(b[2], a[2]);
+    pad_to_minimums(); // make sure
   }
 
   const interval &axis_interval(int n) const
@@ -87,6 +91,22 @@ public:
   }
 
   static const aabb empty, universe;
+
+private:
+  void pad_to_minimums()
+  {
+    // If any of the intervals are too small, it may cause floating point issues,
+    // so make sure they have at least span >= delta
+
+    double delta = 0.0001;
+
+    if (x.size() < delta)
+      x = x.expanded_by(delta);
+    if (y.size() < delta)
+      y = y.expanded_by(delta);
+    if (z.size() < delta)
+      z = z.expanded_by(delta);
+  }
 };
 
 const aabb aabb::empty = aabb(interval::empty, interval::empty, interval::empty);

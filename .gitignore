@@ -4,3 +4,4 @@ x64
 raytracer
 ./*.png
 .DS_Store
+*.jpeg
