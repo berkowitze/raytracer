@@ -214,17 +214,17 @@ void simple_light(int chunk)
     world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(perlin_texture)));
     world.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(perlin_texture)));
 
-    auto diffuse_light_mat = make_shared<diffuse_light>(color(4));
+    auto diffuse_light_mat = make_shared<diffuse_light>(color(.1, .3, 7));
     world.add(make_shared<quad>(point3(3, 1, -2), vec3(2, 0, 0), vec3(0, 2, 0), diffuse_light_mat));
-    world.add(make_shared<sphere>(point3(0, 7, 0), 2, diffuse_light_mat));
+    world.add(make_shared<sphere>(point3(0, 7, 0), 2, make_shared<diffuse_light>(color(3.8))));
 
-    auto red_light_mat = make_shared<diffuse_light>(color(9, 0, 0));
+    auto red_light_mat = make_shared<diffuse_light>(color(8, .2, .1));
     world.add(make_shared<sphere>(point3(-4, 1.5, 4), 1.5, red_light_mat));
 
     camera cam;
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 600;
-    cam.samples_per_pixel = 500;
+    cam.image_width = 800;
+    cam.samples_per_pixel = 10000;
     cam.max_depth = 50;
     cam.background = color(0, 0, 0);
 
@@ -235,7 +235,7 @@ void simple_light(int chunk)
 
     cam.defocus_angle = 0;
 
-    cam.render(world, chunk);
+    cam.render(world, chunk, true);
 }
 
 void cornell_box(int chunk)
@@ -277,8 +277,8 @@ void cornell_box(int chunk)
     camera cam;
 
     cam.aspect_ratio = 1.0;
-    cam.image_width = 400;
-    cam.samples_per_pixel = 250;
+    cam.image_width = 800;
+    cam.samples_per_pixel = 5000;
     cam.max_depth = 50;
     cam.background = color(0, 0, 0);
 
@@ -289,7 +289,7 @@ void cornell_box(int chunk)
 
     cam.defocus_angle = 0;
     world = hittable_list(make_shared<bvh_node>(world));
-    cam.render(world, chunk);
+    cam.render(world, chunk, true);
 }
 
 // code copied from tutorial since it's just setup
@@ -317,14 +317,14 @@ void cornell_smoke(int chunk)
     box2 = make_shared<rotate>(box2, 1, -18);
     box2 = make_shared<translate>(box2, vec3(130, 0, 65));
 
-    world.add(make_shared<constant_medium>(box1, 0.01, color(0, 0, 0)));
-    world.add(make_shared<constant_medium>(box2, 0.01, color(1, 1, 1)));
+    world.add(make_shared<constant_medium>(box1, 0.01, color(0, .1, .2)));
+    world.add(make_shared<constant_medium>(box2, 0.01, color(1, .9, .8)));
 
     camera cam;
 
     cam.aspect_ratio = 1.0;
-    cam.image_width = 600;
-    cam.samples_per_pixel = 200;
+    cam.image_width = 800;
+    cam.samples_per_pixel = 5000;
     cam.max_depth = 50;
     cam.background = color(0, 0, 0);
 
@@ -465,7 +465,7 @@ int main(int argc, char **argv)
         }
     }
 
-    switch (1)
+    switch (8)
     {
     case 1:
         lots_of_balls(chunk);

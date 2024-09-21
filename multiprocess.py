@@ -1,5 +1,4 @@
 import multiprocessing
-from multiprocessing.pool import ThreadPool
 import time
 import os
 import subprocess
@@ -18,7 +17,7 @@ def call_raytracer_command():
     filename = str(time.time())
     os.mkdir(f"out/{filename}")
     print(f"Output will be saved in out/{filename}.png")
-    print(f"Preview command: python multiprocess.py {filename}")
+    print(f"Preview command: python preview.py {filename}")
 
     with open(f"out/{filename}.ppm", "w") as f:
         subprocess.call(["./raytracer", "--chunk=-2"], stdout=f)
@@ -31,7 +30,6 @@ def call_raytracer_command():
 
     pool.close()
     pool.join()
-    t_2 = time.time()
     print("All chunks done, combining files")
 
     with open(f'out/{filename}.ppm', 'a') as f:
@@ -45,7 +43,6 @@ def call_raytracer_command():
 
     print(f"Done. Final output in out/{filename}.png")
     print(f"Time taken: {t_3 - t_start:.2f}s")
-    print(f"Time taken without file combination: {t_2 - t_start:.2f}s")
     
     # cleanup
     if exit_code == 0:
@@ -66,7 +63,7 @@ def preview(filename):
     image_width = int(resolution[0])
     image_height = int(resolution[1])
     rows_per_chunk = (image_height + num_chunks - 1) // num_chunks
-    preview_filename = f'out/{filename}-preview-{time.time()}.ppm'
+    preview_filename = f'out/preview/{filename}{time.time()}.ppm'
     with open(preview_filename, 'a') as f:
         f.truncate(0)
         f.write(ppm)
