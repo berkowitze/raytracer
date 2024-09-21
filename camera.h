@@ -171,7 +171,8 @@ private:
         vec3 sample_location = pixel00_loc + ((j + pixel_offset.y()) * pixel_delta_v) + ((i + pixel_offset.x()) * pixel_delta_u);
         vec3 ray_origin = (defocus_angle <= 0) ? lookfrom : defocus_disk_sample();
         vec3 ray_direction = sample_location - ray_origin;
-        double time = random_double();
+        // double time = random_double();
+        double time = 0;
         ray r(ray_origin, ray_direction, time);
         return r;
     }

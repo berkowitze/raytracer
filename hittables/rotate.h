@@ -26,7 +26,7 @@ public:
           double y = j * bbox.y.max + (1 - j) * bbox.y.min;
           double z = k * bbox.z.max + (1 - k) * bbox.z.min;
 
-          vec3 rotated_vertex = get_rotated_vector(vec3(x, y, z));
+          vec3 rotated_vertex = get_negative_rotated_vector(vec3(x, y, z));
           // Update min and max to tightly constrain the rotated bounding box
           for (int c = 0; c < 3; c++)
           {
@@ -97,7 +97,7 @@ private:
     else if (axis == 1)
     {
       double x = (cos_theta * p.x()) + (sin_theta * p.z());
-      double z = -(sin_theta * p.x()) + (cos_theta * p.z());
+      double z = (-sin_theta * p.x()) + (cos_theta * p.z());
       return vec3(x, p.y(), z);
     }
     return p;

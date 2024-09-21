@@ -1,4 +1,4 @@
-# import os
+import os
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -6,6 +6,8 @@ import subprocess
 import sys
 
 filename = sys.argv[1]
+# set recursion limit much higher
+sys.setrecursionlimit(10**6)
 
 # taken from https://stackoverflow.com/a/45734500
 def mypause(interval):
@@ -33,6 +35,7 @@ def update_image(ax, fig):
     ax.imshow(img)
     fig.canvas.draw()
     mypause(3)
+    os.remove(preview_filename)
     update_image(ax, fig)  # Recursive update
 
 plt.ion()

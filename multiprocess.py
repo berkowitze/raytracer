@@ -22,7 +22,7 @@ def call_raytracer_command():
     with open(f"out/{filename}.ppm", "w") as f:
         subprocess.call(["./raytracer", "--chunk=-2"], stdout=f)
 
-    pool = multiprocessing.Pool(multiprocessing.cpu_count())
+    pool = multiprocessing.Pool(multiprocessing.cpu_count() - 2)
 
     t_start = time.time()
     for i in range(num_chunks):

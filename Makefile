@@ -25,7 +25,7 @@ clean:
 
 run_one_process:
 	@echo "./raytracer $(FLAGS) > $(OUTPUT_FILE)"
-	@sh -c 'make clean && make && ./raytracer $(FLAGS) > $(OUTPUT_FILE) && open -g $(OUTPUT_FILE) && tput bel'
+	@sh -c 'make clean && make && time ./raytracer $(FLAGS) > $(OUTPUT_FILE) && open -g $(OUTPUT_FILE) && tput bel'
 
 run:
 	@echo "python multiprocess.py"

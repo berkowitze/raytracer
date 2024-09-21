@@ -69,15 +69,15 @@ void lots_of_balls(int chunk)
     main_camera.background = color(0.70, 0.80, 1.00);
     main_camera.aspect_ratio = 16.0 / 9.0;
     // For perf testing, keep these as 600 300 40
-    // main_camera.image_width = 600;
-    // main_camera.samples_per_pixel = 300;
-    // main_camera.max_depth = 40;
+    main_camera.image_width = 600;
+    main_camera.samples_per_pixel = 300;
+    main_camera.max_depth = 40;
     // main_camera.image_width = 1920;
     // main_camera.samples_per_pixel = 1000;
     // main_camera.max_depth = 40;
-    main_camera.image_width = 600;
-    main_camera.samples_per_pixel = 100;
-    main_camera.max_depth = 30;
+    // main_camera.image_width = 600;
+    // main_camera.samples_per_pixel = 100;
+    // main_camera.max_depth = 30;
 
     main_camera.vfov = 20;
     main_camera.defocus_angle = 0.6;
@@ -264,12 +264,12 @@ void cornell_box(int chunk)
     // box2 = make_shared<translate>(box2, vec3(130, 1, 65));
     // world.add(box2);
 
-    shared_ptr<hittable> box1 = box(point3(0, 0, 0), point3(165, 330, 165), white);
+    shared_ptr<hittable> box1 = box(point3(0), point3(165, 330, 165), white);
     box1 = make_shared<rotate>(box1, 1, 15);
     box1 = make_shared<translate>(box1, vec3(265, 0, 295));
     world.add(box1);
 
-    shared_ptr<hittable> box2 = box(point3(0, 0, 0), point3(165, 165, 165), white);
+    shared_ptr<hittable> box2 = box(point3(0), point3(165), white);
     box2 = make_shared<rotate>(box2, 1, -18);
     box2 = make_shared<translate>(box2, vec3(130, 0, 65));
     world.add(box2);
@@ -278,8 +278,8 @@ void cornell_box(int chunk)
 
     cam.aspect_ratio = 1.0;
     cam.image_width = 800;
-    cam.samples_per_pixel = 5000;
-    cam.max_depth = 50;
+    cam.samples_per_pixel = 1500;
+    cam.max_depth = 35;
     cam.background = color(0, 0, 0);
 
     cam.vfov = 40;
@@ -341,24 +341,50 @@ void cornell_smoke(int chunk)
 void rotate_test(int chunk)
 {
     hittable_list world;
-    auto b = box(vec3(-1), vec3(1), make_shared<lambertian>(vec3(0.6, 0.1, 0.2)));
-    world.add(make_shared<rotate>(b, 1, 45));
+    // auto b = box(vec3(-1), vec3(1), make_shared<lambertian>(vec3(0.6, 0.1, 0.2)));
+    // auto c = make_shared<translate>(b, vec3(-2, 0, 1));
+    // auto d = make_shared<rotate>(c, 1, -45);
+    auto white = make_shared<lambertian>(.73);
+    // shared_ptr<hittable> box1 = box(point3(0), point3(165, 330, 165), white);
+    // box1 = make_shared<rotate>(box1, 1, 15);
+    // box1 = make_shared<translate>(box1, vec3(265, 0, 295));
+    // world.add(box1);
+
+    shared_ptr<hittable> box2 = box(point3(0), point3(165), white);
+    box2 = make_shared<rotate>(box2, 1, -35);
+    // box2 = make_shared<translate>(box2, vec3(130, 0, 65));
+    world.add(box2);
     camera cam;
 
-    cam.aspect_ratio = 1.0;
-    cam.image_width = 400;
-    cam.samples_per_pixel = 150;
-    cam.max_depth = 50;
-    cam.background = color(.5, .5, .5);
+    // cam.aspect_ratio = 1.0;
+    // cam.image_width = 400;
+    // cam.samples_per_pixel = 150;
+    // cam.max_depth = 50;
+    // cam.background = color(.5, .5, .5);
 
-    cam.vfov = 40;
-    cam.lookfrom = point3(10, 10, 0);
-    cam.lookat = point3(0);
-    cam.vup = vec3(0, 1, 0);
+    // cam.vfov = 40;
+    // cam.lookfrom = point3(10, 5, 0);
+    // cam.lookat = point3(0);
+    // cam.vup = vec3(0, 1, 0);
 
     cam.defocus_angle = 0;
 
+    cam.aspect_ratio = 1.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 300;
+    cam.max_depth = 50;
+    cam.background = color(0, 0, 0);
+
+    cam.vfov = 40;
+    cam.lookfrom = point3(278, 278, -800);
+    cam.lookat = point3(82.5, 82.5, 0);
+    cam.vup = vec3(0, 1, 0);
+
+    cam.defocus_angle = 0;
+    world = hittable_list(make_shared<bvh_node>(world));
     cam.render(world, chunk);
+
+    // cam.render(world, chunk);
 }
 
 void book_2_final_scene(int chunk)
@@ -465,7 +491,7 @@ int main(int argc, char **argv)
         }
     }
 
-    switch (8)
+    switch (1)
     {
     case 1:
         lots_of_balls(chunk);
