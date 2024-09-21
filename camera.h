@@ -21,21 +21,27 @@ public:
     int samples_per_pixel = 10;
     int max_depth = 10; // max number of bounces for each ray
 
-    void render(const hittable &world, int chunk)
+    void render(const hittable &world, int chunk, bool use_background = false)
     {
         initialize();
 
-        if (chunk == -2)
+        if (chunk < 0)
         {
             std::cout << "P3\n"
                       << image_width << ' ' << image_height << "\n255\n";
-            return;
+            if (chunk == -2)
+            {
+                return;
+            }
         }
 
-        int num_chunks = 20;
-        int rows_per_chunk = std::ceilf(image_height / num_chunks);
+        int num_chunks = 30;
+        int rows_per_chunk = (image_height + num_chunks - 1) / num_chunks;
         int chunk_start = chunk == -1 ? 0 : rows_per_chunk * chunk;
-        int chunk_end = chunk == -1 ? image_height : std::min(chunk_start + rows_per_chunk, image_height);
+        int chunk_end = chunk == -1               ? image_height
+                        : chunk == num_chunks - 1 ? image_height
+                                                  : std::min(chunk_start + rows_per_chunk, image_height);
+
         for (int j = chunk_start; j < chunk_end; j++)
         {
             if (chunk == -1)
@@ -48,7 +54,7 @@ public:
                 for (int sample = 0; sample < samples_per_pixel; sample++)
                 {
                     ray r = get_ray(i, j);
-                    pixel_color += ray_color(r, world, max_depth);
+                    pixel_color += ray_color(r, world, max_depth, use_background);
                 }
 
                 write_color(std::cout, pixel_color / samples_per_pixel);
@@ -103,7 +109,7 @@ private:
         pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
     }
 
-    color ray_color(const ray &r, const hittable &world, int bounces_remaining) const
+    color ray_color(const ray &r, const hittable &world, int bounces_remaining, bool use_background) const
     {
         if (bounces_remaining <= 0)
         {
@@ -132,7 +138,7 @@ private:
             bool scatters = rec.mat->scatter(r, rec, attenuation, scattered_ray);
             if (scatters)
             {
-                color color_from_scatter = attenuation * ray_color(scattered_ray, world, bounces_remaining - 1);
+                color color_from_scatter = attenuation * ray_color(scattered_ray, world, bounces_remaining - 1, use_background);
                 return color_from_scatter + color_from_emission;
             }
             else
@@ -142,7 +148,16 @@ private:
         }
         else
         {
-            return background;
+            if (use_background)
+            {
+                return background;
+            }
+            else
+            {
+                vec3 unit_direction = unit_vector(r.direction());
+                double a = 0.5 * (unit_direction.y() + 1.0); // scale from (-1, 1) to (0, 1)
+                return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+            }
         }
 
         vec3 unit_direction = unit_vector(r.direction());

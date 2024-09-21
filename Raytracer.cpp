@@ -36,7 +36,8 @@ void lots_of_balls(int chunk)
             if (mat_rng < 0.7)
             {
                 sphere_material = make_shared<lambertian>(color::random() * color::random());
-                end_position = position + vec3(0, random_double(0, 0.5), 0);
+                // end_position = position + vec3(0, random_double(0, 0.5), 0);
+                end_position = position;
             }
             else if (mat_rng < 0.9)
             {
@@ -67,9 +68,17 @@ void lots_of_balls(int chunk)
     camera main_camera;
     main_camera.background = color(0.70, 0.80, 1.00);
     main_camera.aspect_ratio = 16.0 / 9.0;
-    main_camera.image_width = 400;
-    main_camera.samples_per_pixel = 75;
+    // For perf testing, keep these as 600 300 40
+    // main_camera.image_width = 600;
+    // main_camera.samples_per_pixel = 300;
+    // main_camera.max_depth = 40;
+    // main_camera.image_width = 1920;
+    // main_camera.samples_per_pixel = 1000;
+    // main_camera.max_depth = 40;
+    main_camera.image_width = 600;
+    main_camera.samples_per_pixel = 100;
     main_camera.max_depth = 30;
+
     main_camera.vfov = 20;
     main_camera.defocus_angle = 0.6;
     main_camera.focus_distance = 10;
@@ -326,7 +335,7 @@ void cornell_smoke(int chunk)
 
     cam.defocus_angle = 0;
 
-    cam.render(world, chunk);
+    cam.render(world, chunk, true);
 }
 
 void rotate_test(int chunk)
@@ -393,13 +402,13 @@ void book_2_final_scene(int chunk)
     world.add(make_shared<sphere>(
         point3(260, 150, 45), 50, make_shared<dielectric>(1.5)));
     world.add(make_shared<sphere>(
-        point3(0, 150, 145), 50, make_shared<metal>(color(0.8, 0.8, 0.9), 1)));
+        point3(0, 150, 145), 50, make_shared<metal>(color(0.8, 0.8, 0.9), .1)));
 
     // Subsurface sphere is a dielectric sphere right around a volumetric sphere
     auto boundary = make_shared<sphere>(point3(360, 150, 145), 70, make_shared<dielectric>(1.5));
     world.add(boundary);
+    world.add(make_shared<constant_medium>(boundary, 0.01, color(0.9, 0.2, 0.4)));
     // Also add fog to ~the entire scene
-    world.add(make_shared<constant_medium>(boundary, 0.2, color(0.2, 0.4, 0.9)));
     boundary = make_shared<sphere>(point3(0), 5000, make_shared<dielectric>(1.5)); // don't think dielectric matters here
     world.add(make_shared<constant_medium>(boundary, 0.0001, color(1)));
 
@@ -426,9 +435,11 @@ void book_2_final_scene(int chunk)
     camera cam;
 
     cam.aspect_ratio = 1.0;
-    cam.image_width = 1920;
-    cam.samples_per_pixel = 10000;
-    cam.max_depth = 40;
+    // cam.image_width = 1000;
+    cam.image_width = 600;
+    // cam.samples_per_pixel = 10000;
+    cam.samples_per_pixel = 1000;
+    cam.max_depth = 30;
     cam.background = color(0, 0, 0);
 
     cam.vfov = 40;
@@ -438,7 +449,7 @@ void book_2_final_scene(int chunk)
 
     cam.defocus_angle = 0;
 
-    cam.render(world, chunk);
+    cam.render(world, chunk, true);
 }
 
 int main(int argc, char **argv)
@@ -454,7 +465,7 @@ int main(int argc, char **argv)
         }
     }
 
-    switch (10)
+    switch (1)
     {
     case 1:
         lots_of_balls(chunk);
