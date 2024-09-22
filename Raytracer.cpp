@@ -262,25 +262,31 @@ void cornell_box(int chunk)
     // box2 = make_shared<rotate>(box2, 0, degrees_to_radians(-18));
     // box2 = make_shared<translate>(box2, vec3(130, 1, 65));
     // world.add(box2);
-
-    shared_ptr<hittable> box1 = box(point3(0), point3(165, 330, 165), white);
+    shared_ptr<hittable> box1 = box(point3(0, 0, 0), point3(165, 330, 165), white);
     box1 = make_shared<rotate>(box1, 1, 15);
     box1 = make_shared<translate>(box1, vec3(265, 0, 295));
     world.add(box1);
 
-    auto empty_material = shared_ptr<material>();
-    quad lights(point3(343, 554, 332), vec3(-130, 0, 0), vec3(0, 0, -105), empty_material);
+    // Glass Sphere
+    auto glass = make_shared<dielectric>(1.5);
+    world.add(make_shared<sphere>(point3(190, 90, 190), 90, glass));
 
-    shared_ptr<hittable> box2 = box(point3(0), point3(165), white);
-    box2 = make_shared<rotate>(box2, 1, -18);
-    box2 = make_shared<translate>(box2, vec3(130, 0, 65));
-    world.add(box2);
+    auto empty_material = shared_ptr<material>();
+    hittable_list lights;
+    lights.add(
+        make_shared<quad>(point3(343, 554, 332), vec3(-130, 0, 0), vec3(0, 0, -105), empty_material));
+    lights.add(make_shared<sphere>(point3(190, 90, 190), 90, empty_material));
+
+    // shared_ptr<hittable> box2 = box(point3(0), point3(165), white);
+    // box2 = make_shared<rotate>(box2, 1, -18);
+    // box2 = make_shared<translate>(box2, vec3(130, 0, 65));
+    // world.add(box2);
 
     camera cam;
 
     cam.aspect_ratio = 1.0;
     cam.image_width = 600;
-    cam.samples_per_pixel = 100;
+    cam.samples_per_pixel = 1000;
     cam.max_depth = 50;
 
     cam.background = color(0, 0, 0);

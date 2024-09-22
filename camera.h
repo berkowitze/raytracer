@@ -154,27 +154,28 @@ private:
         // vec3 direction = rec.normal + random_unit_vector();
 
         // Use hit objects' material
-        ray scattered_ray;
-        color attenuation;
-        double pdf_value;
-        color color_from_emission = rec.mat->emitted(r, rec, rec.u, rec.v, rec.p);
 
-        bool scatters = rec.mat->scatter(r, rec, attenuation, scattered_ray, pdf_value);
-        if (!scatters)
+        scatter_record srec;
+        color color_from_emission = rec.mat->emitted(r, rec, rec.u, rec.v, rec.p);
+        if (!rec.mat->scatter(r, rec, srec))
         {
             return color_from_emission;
         }
 
-        auto p0 = make_shared<hittable_pdf>(lights, rec.p);
-        auto p1 = make_shared<cosine_pdf>(rec.normal);
-        mixture_pdf mixed_pdf(p0, p1);
+        if (srec.skip_pdf)
+        {
+            return srec.attenuation * ray_color(srec.skip_pdf_ray, world, lights, bounces_remaining - 1, use_background);
+        }
 
-        scattered_ray = ray(rec.p, mixed_pdf.generate(), r.time());
-        pdf_value = mixed_pdf.value(scattered_ray.direction());
+        auto light_ptr = make_shared<hittable_pdf>(lights, rec.p);
+        mixture_pdf p = mixture_pdf(light_ptr, srec.pdf_ptr);
+
+        ray scattered_ray = ray(rec.p, p.generate(), r.time());
+        double pdf_value = p.value(scattered_ray.direction());
 
         double scattering_pdf = rec.mat->scattering_pdf(r, rec, scattered_ray);
         color sample_color = ray_color(scattered_ray, world, lights, bounces_remaining - 1, use_background);
-        color color_from_scatter = (attenuation * scattering_pdf * sample_color) / pdf_value;
+        color color_from_scatter = (srec.attenuation * scattering_pdf * sample_color) / pdf_value;
         return color_from_scatter + color_from_emission;
         // hacky way to send rays towards cornell box light
         // point3 point_on_light = point3(random_double(213, 343), 554, random_double(227, 332));

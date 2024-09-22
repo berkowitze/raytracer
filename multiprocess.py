@@ -35,7 +35,7 @@ def call_raytracer_command():
     with open(f'out/{filename}.ppm', 'a') as f:
         for chunk in range(num_chunks):
             with open(f"out/{filename}/{chunk}.txt", "r") as chunk_file:
-                f.write(chunk_file.read()) 
+                f.write(chunk_file.read())
     t_3 = time.time()
 
     # convert to png
