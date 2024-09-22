@@ -21,7 +21,7 @@ public:
     int samples_per_pixel = 10;
     int max_depth = 10; // max number of bounces for each ray
 
-    void render(const hittable &world, int chunk, bool use_background = false)
+    void render(const hittable &world, const hittable &lights, int chunk, bool use_background = false)
     {
         initialize();
 
@@ -51,10 +51,13 @@ public:
             for (int i = 0; i < image_width; i++)
             {
                 color pixel_color = color();
-                for (int sample = 0; sample < samples_per_pixel; sample++)
+                for (int s_i = 0; s_i < sqrt_samples_per_pixel; s_i++)
                 {
-                    ray r = get_ray(i, j);
-                    pixel_color += ray_color(r, world, max_depth, use_background);
+                    for (int s_j = 0; s_j < sqrt_samples_per_pixel; s_j++)
+                    {
+                        ray r = get_ray(i, j, s_i, s_j);
+                        pixel_color += ray_color(r, world, lights, max_depth, use_background);
+                    }
                 }
 
                 write_color(std::cout, pixel_color / samples_per_pixel);
@@ -70,10 +73,14 @@ private:
     vec3 pixel_delta_v;
     vec3 u, v, w; // camera frame basis vectors
     vec3 defocus_disk_u, defocus_disk_v;
+    int sqrt_samples_per_pixel;
+    double reciprocal_sqrt_samples_per_pixel;
 
     void initialize()
     {
         image_height = std::max(1, int(image_width / aspect_ratio));
+        sqrt_samples_per_pixel = int(std::sqrt(samples_per_pixel));
+        reciprocal_sqrt_samples_per_pixel = 1.0 / sqrt_samples_per_pixel;
         camera_center = lookfrom;
 
         // Camera
@@ -109,65 +116,97 @@ private:
         pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
     }
 
-    color ray_color(const ray &r, const hittable &world, int bounces_remaining, bool use_background) const
+    color ray_color(const ray &r, const hittable &world, const hittable &lights, int bounces_remaining, bool use_background) const
     {
         if (bounces_remaining <= 0)
         {
             return color();
         }
 
+        // if (use_background)
+        // {
+        //     return background;
+        // }
+        // else
+        // {
+        //     vec3 unit_direction = unit_vector(r.direction());
+        //     double a = 0.5 * (unit_direction.y() + 1.0); // scale from (-1, 1) to (0, 1)
+        //     return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+        // }
+        // vec3 unit_direction = unit_vector(r.direction());
+        // double a = 0.5 * (unit_direction.y() + 1.0); // scale from (-1, 1) to (0, 1)
+        // return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+
         hit_record rec;
         // Ignore very close intersections since that could be "shadow acne" (close intersections due to rounding error)
-        if (world.hit(r, interval(0.001, infinity), rec))
+        if (!world.hit(r, interval(0.001, infinity), rec))
         {
-            // Red sphere
-            // return vec3(1, 0.0, 0.0);
-            // Normals sphere
-            // return 0.5 * (rec.normal + color(1, 1, 1));
-            // -- Actual raycasting --
-            // Cast randomly along hemisphere - random scatter direction
-            // vec3 direction = random_on_hemisphere(rec.normal);
-            // Lambertian diffuse
-            // vec3 direction = rec.normal + random_unit_vector();
-
-            // Use hit objects' material
-            ray scattered_ray;
-            color attenuation;
-            color color_from_emission = rec.mat->emitted(rec.u, rec.v, rec.p);
-
-            bool scatters = rec.mat->scatter(r, rec, attenuation, scattered_ray);
-            if (scatters)
-            {
-                color color_from_scatter = attenuation * ray_color(scattered_ray, world, bounces_remaining - 1, use_background);
-                return color_from_scatter + color_from_emission;
-            }
-            else
-            {
-                return color_from_emission;
-            }
+            return background;
         }
-        else
+        // Red sphere
+        // return vec3(1, 0.0, 0.0);
+        // Normals sphere
+        // return 0.5 * (rec.normal + color(1, 1, 1));
+        // -- Actual raycasting --
+        // Cast randomly along hemisphere - random scatter direction
+        // vec3 direction = random_on_hemisphere(rec.normal);
+        // Lambertian diffuse
+        // vec3 direction = rec.normal + random_unit_vector();
+
+        // Use hit objects' material
+        ray scattered_ray;
+        color attenuation;
+        double pdf_value;
+        color color_from_emission = rec.mat->emitted(r, rec, rec.u, rec.v, rec.p);
+
+        bool scatters = rec.mat->scatter(r, rec, attenuation, scattered_ray, pdf_value);
+        if (!scatters)
         {
-            if (use_background)
-            {
-                return background;
-            }
-            else
-            {
-                vec3 unit_direction = unit_vector(r.direction());
-                double a = 0.5 * (unit_direction.y() + 1.0); // scale from (-1, 1) to (0, 1)
-                return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
-            }
+            return color_from_emission;
         }
 
-        vec3 unit_direction = unit_vector(r.direction());
-        double a = 0.5 * (unit_direction.y() + 1.0); // scale from (-1, 1) to (0, 1)
-        return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+        auto p0 = make_shared<hittable_pdf>(lights, rec.p);
+        auto p1 = make_shared<cosine_pdf>(rec.normal);
+        mixture_pdf mixed_pdf(p0, p1);
+
+        scattered_ray = ray(rec.p, mixed_pdf.generate(), r.time());
+        pdf_value = mixed_pdf.value(scattered_ray.direction());
+
+        double scattering_pdf = rec.mat->scattering_pdf(r, rec, scattered_ray);
+        // hacky way to send rays towards cornell box light
+        // point3 point_on_light = point3(random_double(213, 343), 554, random_double(227, 332));
+        // vec3 to_light = point_on_light - rec.p;
+        // double l_squared = to_light.length_squared();
+        // to_light = unit_vector(to_light);
+
+        // // light is facing this point
+        // if (dot(to_light, rec.normal) < 0)
+        // {
+        //     return color_from_emission;
+        // }
+
+        // double light_area = (343 - 213) * (332 - 227);
+        // double light_cosine = std::fabs(to_light.y());
+        // // super close to light
+        // if (light_cosine < 0.0000001)
+        // {
+        //     return color_from_emission;
+        // }
+
+        // pdf_value = l_squared / (light_cosine * light_area);
+        // scattered_ray = ray(rec.p, to_light, r.time());
+
+        // double scattering_pdf = rec.mat->scattering_pdf(r, rec, scattered_ray);
+        color sample_color = ray_color(scattered_ray, world, lights, bounces_remaining - 1, use_background);
+        color color_from_scatter = (attenuation * scattering_pdf * sample_color) / pdf_value;
+        return color_from_scatter + color_from_emission;
     }
 
-    ray get_ray(int i, int j)
+    ray get_ray(int i, int j, int s_i, int s_j) const
     {
-        vec3 pixel_offset = sample_square();
+        // stratified sampling ensures that each pixel is sampled throughout its area
+        vec3 pixel_offset = sample_stratified_square(s_i, s_j);
+        // vec3 pixel_offset = sample_square();
         vec3 sample_location = pixel00_loc + ((j + pixel_offset.y()) * pixel_delta_v) + ((i + pixel_offset.x()) * pixel_delta_u);
         vec3 ray_origin = (defocus_angle <= 0) ? lookfrom : defocus_disk_sample();
         vec3 ray_direction = sample_location - ray_origin;
@@ -186,6 +225,13 @@ private:
     vec3 sample_square() const
     {
         return vec3(random_double(-0.5, 0.5), random_double(-0.5, 0.5), 0);
+    }
+
+    vec3 sample_stratified_square(int s_i, int s_j) const
+    {
+        return vec3((s_i + random_double()) * reciprocal_sqrt_samples_per_pixel - 0.5,
+                    (s_j + random_double()) * reciprocal_sqrt_samples_per_pixel - 0.5,
+                    0);
     }
 };
 

@@ -84,8 +84,7 @@ void lots_of_balls(int chunk)
     main_camera.focus_distance = 10;
     main_camera.lookfrom = vec3(13, 2, 3);
     main_camera.lookat = vec3(0, 0, 0);
-
-    main_camera.render(world, chunk);
+    main_camera.render(world, *make_shared<hittable_list>(), chunk);
 }
 
 void checkered_spheres(int chunk)
@@ -114,7 +113,7 @@ void checkered_spheres(int chunk)
 
     cam.defocus_angle = 0;
 
-    cam.render(world, chunk);
+    cam.render(world, *make_shared<hittable_list>(), chunk);
 }
 
 void fantasy_planet(int chunk)
@@ -142,7 +141,7 @@ void fantasy_planet(int chunk)
 
     cam.defocus_angle = 0;
 
-    cam.render(world, chunk);
+    cam.render(world, *make_shared<hittable_list>(), chunk);
 }
 
 void perlin_spheres(int chunk)
@@ -168,7 +167,7 @@ void perlin_spheres(int chunk)
 
     cam.defocus_angle = 0;
 
-    cam.render(world, chunk);
+    cam.render(world, *make_shared<hittable_list>(), chunk);
 }
 
 void quads(int chunk)
@@ -203,7 +202,7 @@ void quads(int chunk)
 
     cam.defocus_angle = 0;
 
-    cam.render(world, chunk);
+    cam.render(world, *make_shared<hittable_list>(), chunk);
 }
 
 void simple_light(int chunk)
@@ -235,7 +234,7 @@ void simple_light(int chunk)
 
     cam.defocus_angle = 0;
 
-    cam.render(world, chunk, true);
+    cam.render(world, *make_shared<hittable_list>(), chunk, true);
 }
 
 void cornell_box(int chunk)
@@ -269,6 +268,9 @@ void cornell_box(int chunk)
     box1 = make_shared<translate>(box1, vec3(265, 0, 295));
     world.add(box1);
 
+    auto empty_material = shared_ptr<material>();
+    quad lights(point3(343, 554, 332), vec3(-130, 0, 0), vec3(0, 0, -105), empty_material);
+
     shared_ptr<hittable> box2 = box(point3(0), point3(165), white);
     box2 = make_shared<rotate>(box2, 1, -18);
     box2 = make_shared<translate>(box2, vec3(130, 0, 65));
@@ -277,9 +279,10 @@ void cornell_box(int chunk)
     camera cam;
 
     cam.aspect_ratio = 1.0;
-    cam.image_width = 800;
-    cam.samples_per_pixel = 1500;
-    cam.max_depth = 35;
+    cam.image_width = 600;
+    cam.samples_per_pixel = 10;
+    cam.max_depth = 50;
+
     cam.background = color(0, 0, 0);
 
     cam.vfov = 40;
@@ -288,8 +291,8 @@ void cornell_box(int chunk)
     cam.vup = vec3(0, 1, 0);
 
     cam.defocus_angle = 0;
-    world = hittable_list(make_shared<bvh_node>(world));
-    cam.render(world, chunk, true);
+    // world = hittable_list(make_shared<bvh_node>(world));
+    cam.render(world, lights, chunk, true);
 }
 
 // code copied from tutorial since it's just setup
@@ -335,7 +338,7 @@ void cornell_smoke(int chunk)
 
     cam.defocus_angle = 0;
 
-    cam.render(world, chunk, true);
+    cam.render(world, *make_shared<hittable_list>(), chunk, true);
 }
 
 void rotate_test(int chunk)
@@ -382,9 +385,9 @@ void rotate_test(int chunk)
 
     cam.defocus_angle = 0;
     world = hittable_list(make_shared<bvh_node>(world));
-    cam.render(world, chunk);
+    cam.render(world, *make_shared<hittable_list>(), chunk);
 
-    // cam.render(world, chunk);
+    // cam.render(world, *make_shared<hittable_list>(), chunk);
 }
 
 void book_2_final_scene(int chunk)
@@ -475,7 +478,7 @@ void book_2_final_scene(int chunk)
 
     cam.defocus_angle = 0;
 
-    cam.render(world, chunk, true);
+    cam.render(world, *make_shared<hittable_list>(), chunk, true);
 }
 
 int main(int argc, char **argv)
@@ -491,7 +494,7 @@ int main(int argc, char **argv)
         }
     }
 
-    switch (1)
+    switch (7)
     {
     case 1:
         lots_of_balls(chunk);

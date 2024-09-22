@@ -11,14 +11,19 @@ public:
 
   // Return whether or not the ray scatters
   virtual bool scatter(
-      const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered_ray) const
+      const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered_ray, double &pdf) const
   {
     return false;
   }
 
-  virtual color emitted(double u, double v, const point3 &p) const
+  virtual color emitted(const ray &r_in, const hit_record &rec, double u, double v, const point3 &p) const
   {
     return color(0);
+  }
+
+  virtual double scattering_pdf(const ray &r_in, const hit_record &hit_rec, const ray &scattered) const
+  {
+    return 0;
   }
 };
 
@@ -29,19 +34,21 @@ public:
   lambertian(shared_ptr<texture> tex) : tex(tex) {}
 
   bool scatter(
-      const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered_ray) const override
+      const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered_ray, double &pdf) const override
   {
-    vec3 scatter_direction = rec.normal + random_unit_vector();
-    if (scatter_direction.near_zero())
-    {
-      // This prevents degenerate cases of the direction being ~0
-      // but it feels weird to always turn those into the normal vector direction -
-      // will that reflect too much light in just that one direction?
-      scatter_direction = rec.normal;
-    }
-    scattered_ray = ray(rec.p, scatter_direction, r_in.time());
+    onb uvw = onb(rec.normal);
+    vec3 scatter_direction = uvw.transform(random_cosine_direction());
+    // vec3 scatter_direction = rec.normal + random_unit_vector();
+    scattered_ray = ray(rec.p, unit_vector(scatter_direction), r_in.time());
     attenuation = tex->value(rec.u, rec.v, rec.p);
+    pdf = dot(uvw.w(), scattered_ray.direction()) / pi;
     return true;
+  }
+
+  double scattering_pdf(const ray &r_in, const hit_record &hit_rec, const ray &scattered) const override
+  {
+    double cos_theta = dot(hit_rec.normal, unit_vector(scattered.direction()));
+    return cos_theta < 0 ? 0 : cos_theta / pi;
   }
 
 private:
@@ -53,7 +60,7 @@ class metal : public material
 public:
   metal(const color &albedo, double fuzz_factor) : albedo(albedo), fuzz_factor(fuzz_factor) {}
   bool scatter(
-      const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered_ray) const override
+      const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered_ray, double &pdf) const override
   {
     vec3 scatter_direction = reflect(r_in.direction(), rec.normal);
     scatter_direction.normalize();
@@ -74,7 +81,7 @@ class dielectric : public material
 public:
   dielectric(double refraction_index) : refraction_index(refraction_index) {}
 
-  bool scatter(const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered)
+  bool scatter(const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered, double &pdf)
       const override
   {
 
@@ -113,8 +120,12 @@ public:
   diffuse_light(shared_ptr<texture> tex) : texture(tex) {}
   diffuse_light(const color &emission_color) : texture(make_shared<solid_color>(emission_color)) {}
 
-  color emitted(double u, double v, const point3 &p) const override
+  color emitted(const ray &r_in, const hit_record &rec, double u, double v, const point3 &p) const override
   {
+    if (!rec.front_face)
+    {
+      return color();
+    }
     return texture->value(u, v, p);
   }
 
@@ -128,11 +139,17 @@ public:
   isotropic(const color &albedo) : tex(make_shared<solid_color>(albedo)) {}
   isotropic(shared_ptr<texture> tex) : tex(tex) {}
 
-  bool scatter(const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered) const override
+  bool scatter(const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered, double &pdf) const override
   {
     scattered = ray(rec.p, random_unit_vector(), r_in.time());
     attenuation = tex->value(rec.u, rec.v, rec.p);
+    pdf = 1 / (4 * pi);
     return true;
+  }
+
+  double scattering_pdf(const ray &r_in, const hit_record &hit_rec, const ray &scattered) const override
+  {
+    return 1 / (4 * pi);
   }
 
 private:
