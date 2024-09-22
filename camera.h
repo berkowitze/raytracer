@@ -173,6 +173,9 @@ private:
         pdf_value = mixed_pdf.value(scattered_ray.direction());
 
         double scattering_pdf = rec.mat->scattering_pdf(r, rec, scattered_ray);
+        color sample_color = ray_color(scattered_ray, world, lights, bounces_remaining - 1, use_background);
+        color color_from_scatter = (attenuation * scattering_pdf * sample_color) / pdf_value;
+        return color_from_scatter + color_from_emission;
         // hacky way to send rays towards cornell box light
         // point3 point_on_light = point3(random_double(213, 343), 554, random_double(227, 332));
         // vec3 to_light = point_on_light - rec.p;
@@ -197,9 +200,6 @@ private:
         // scattered_ray = ray(rec.p, to_light, r.time());
 
         // double scattering_pdf = rec.mat->scattering_pdf(r, rec, scattered_ray);
-        color sample_color = ray_color(scattered_ray, world, lights, bounces_remaining - 1, use_background);
-        color color_from_scatter = (attenuation * scattering_pdf * sample_color) / pdf_value;
-        return color_from_scatter + color_from_emission;
     }
 
     ray get_ray(int i, int j, int s_i, int s_j) const

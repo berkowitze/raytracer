@@ -11,7 +11,7 @@ public:
     // take care not to generate a vector parallel to n
     vec3 a = (std::fabs(axes[2].x()) > 0.9) ? vec3(0, 1, 0) : vec3(1, 0, 0);
     axes[1] = unit_vector(cross(axes[2], a));
-    axes[2] = cross(axes[2], axes[1]);
+    axes[0] = cross(axes[2], axes[1]);
   }
 
   const vec3 &u() const
