@@ -22,7 +22,7 @@ def call_raytracer_command():
     with open(f"out/{filename}.ppm", "w") as f:
         subprocess.call(["./raytracer", "--chunk=-2"], stdout=f)
 
-    pool = multiprocessing.Pool(multiprocessing.cpu_count() - 2)
+    pool = multiprocessing.Pool(multiprocessing.cpu_count())
 
     t_start = time.time()
     for i in range(num_chunks):
@@ -64,6 +64,7 @@ def preview(filename):
     image_height = int(resolution[1])
     rows_per_chunk = (image_height + num_chunks - 1) // num_chunks
     preview_filename = f'out/preview/{filename}{time.time()}.ppm'
+    incomplete_pixels = 0
     with open(preview_filename, 'a') as f:
         f.truncate(0)
         f.write(ppm)
@@ -75,6 +76,7 @@ def preview(filename):
             chunk_filename = f"out/{filename}/{i}.txt"
             if not os.path.exists(chunk_filename):
                 chunk_data = ["0 0 0"] * expected_num_pixels
+                incomplete_pixels += expected_num_pixels
             else:
                 with open(chunk_filename, "r") as chunk_file:
                     chunk_data = chunk_file.read().strip().split('\n')
@@ -85,12 +87,13 @@ def preview(filename):
             
             actual_num_pixels = len(chunk_data)
             # pad chunk_data with black pixels
+            incomplete_pixels += expected_num_pixels - actual_num_pixels
             for _ in range(expected_num_pixels - actual_num_pixels):
                 chunk_data.append("0 0 0")
             
             f.write('\n'.join(chunk_data) + '\n')
 
-    print(f"Preview saved in {preview_filename}")
+    print(f"Preview={preview_filename}, Progress={100 * (1 - incomplete_pixels / (image_width * image_height)):.2f}%")
 
 if __name__ == '__main__':
     import sys
