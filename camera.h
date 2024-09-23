@@ -56,11 +56,39 @@ public:
                     for (int s_j = 0; s_j < sqrt_samples_per_pixel; s_j++)
                     {
                         ray r = get_ray(i, j, s_i, s_j);
-                        pixel_color += ray_color(r, world, lights, max_depth, use_background);
+                        color c = ray_color(r, world, lights, max_depth, use_background);
+                        double rp = c.x();
+                        double gp = c.y();
+                        double bp = c.z();
+                        if (std::isinf(rp) || std::isnan(rp))
+                        {
+                            rp = 0.0;
+                        }
+                        if (std::isinf(gp) || std::isnan(gp))
+                        {
+                            gp = 0.0;
+                        }
+                        if (std::isinf(bp) || std::isnan(bp))
+                        {
+                            bp = 0.0;
+                        }
+                        if (rp > 1)
+                        {
+                            rp = 1;
+                        }
+                        if (gp > 1)
+                        {
+                            gp = 1;
+                        }
+                        if (bp > 1)
+                        {
+                            bp = 1;
+                        }
+                        pixel_color += color(rp, gp, bp);
                     }
                 }
 
-                write_color(std::cout, pixel_color / samples_per_pixel);
+                write_color(std::cout, pixel_color / (samples_per_pixel));
             }
         }
     }
@@ -211,8 +239,8 @@ private:
         vec3 sample_location = pixel00_loc + ((j + pixel_offset.y()) * pixel_delta_v) + ((i + pixel_offset.x()) * pixel_delta_u);
         vec3 ray_origin = (defocus_angle <= 0) ? lookfrom : defocus_disk_sample();
         vec3 ray_direction = sample_location - ray_origin;
-        // double time = random_double();
-        double time = 0;
+        double time = random_double();
+        // double time = 0;
         ray r(ray_origin, ray_direction, time);
         return r;
     }

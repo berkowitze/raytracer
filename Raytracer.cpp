@@ -268,25 +268,25 @@ void cornell_box(int chunk)
     world.add(box1);
 
     // Glass Sphere
-    auto glass = make_shared<dielectric>(1.5);
-    world.add(make_shared<sphere>(point3(190, 90, 190), 90, glass));
+    // auto glass = make_shared<dielectric>(1.5);
+    // world.add(make_shared<sphere>(point3(190, 90, 190), 90, glass));
 
     auto empty_material = shared_ptr<material>();
     hittable_list lights;
     lights.add(
         make_shared<quad>(point3(343, 554, 332), vec3(-130, 0, 0), vec3(0, 0, -105), empty_material));
-    lights.add(make_shared<sphere>(point3(190, 90, 190), 90, empty_material));
+    // lights.add(make_shared<sphere>(point3(190, 90, 190), 90, empty_material));
 
-    // shared_ptr<hittable> box2 = box(point3(0), point3(165), white);
-    // box2 = make_shared<rotate>(box2, 1, -18);
-    // box2 = make_shared<translate>(box2, vec3(130, 0, 65));
-    // world.add(box2);
+    shared_ptr<hittable> box2 = box(point3(0), point3(165), white);
+    box2 = make_shared<rotate>(box2, 1, -18);
+    box2 = make_shared<translate>(box2, vec3(130, 0, 65));
+    world.add(box2);
 
     camera cam;
 
     cam.aspect_ratio = 1.0;
     cam.image_width = 600;
-    cam.samples_per_pixel = 1000;
+    cam.samples_per_pixel = 5000;
     cam.max_depth = 50;
 
     cam.background = color(0, 0, 0);
@@ -426,6 +426,10 @@ void book_2_final_scene(int chunk)
     auto light = make_shared<diffuse_light>(color(7));
     // area light
     world.add(make_shared<quad>(point3(123, 554, 147), vec3(300, 0, 0), vec3(0, 0, 265), light));
+    auto lights = make_shared<hittable_list>();
+    auto empty_material = shared_ptr<material>();
+    lights->add(make_shared<quad>(point3(123, 554, 147), vec3(300, 0, 0), vec3(0, 0, 265), empty_material));
+    lights->add(make_shared<sphere>(point3(360, 150, 145), 70, empty_material));
 
     // Moving sphere
     point3 center1 = point3(400, 400, 200);
@@ -470,11 +474,11 @@ void book_2_final_scene(int chunk)
     camera cam;
 
     cam.aspect_ratio = 1.0;
-    // cam.image_width = 1000;
     cam.image_width = 600;
+    // cam.image_width = 600;
     // cam.samples_per_pixel = 10000;
-    cam.samples_per_pixel = 1000;
-    cam.max_depth = 30;
+    cam.samples_per_pixel = 300;
+    cam.max_depth = 50;
     cam.background = color(0, 0, 0);
 
     cam.vfov = 40;
@@ -484,7 +488,7 @@ void book_2_final_scene(int chunk)
 
     cam.defocus_angle = 0;
 
-    cam.render(world, *make_shared<hittable_list>(), chunk, true);
+    cam.render(world, *lights, chunk, true);
 }
 
 int main(int argc, char **argv)
@@ -500,7 +504,7 @@ int main(int argc, char **argv)
         }
     }
 
-    switch (7)
+    switch (10)
     {
     case 1:
         lots_of_balls(chunk);
