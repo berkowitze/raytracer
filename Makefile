@@ -31,6 +31,14 @@ run:
 	@echo "python multiprocess.py"
 	@sh -c 'make clean && make && python multiprocess.py && tput bel'
 
+.PHONY: preview
+preview:
+	@sh -c 'python multiprocess.py $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))'
+
+# Prevent make from treating the arguments as separate targets
+%:
+	@:
+
 watch:
 	@make run
 	@fswatch -o *.cpp *.h  | xargs -n1 make run

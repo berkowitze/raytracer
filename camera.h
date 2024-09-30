@@ -36,11 +36,11 @@ public:
         }
 
         int num_chunks = 30;
-        int rows_per_chunk = (image_height + num_chunks - 1) / num_chunks;
+        int rows_per_chunk = int(image_height / num_chunks);
         int chunk_start = chunk == -1 ? 0 : rows_per_chunk * chunk;
         int chunk_end = chunk == -1               ? image_height
                         : chunk == num_chunks - 1 ? image_height
-                                                  : std::min(chunk_start + rows_per_chunk, image_height);
+                                                  : chunk_start + rows_per_chunk;
 
         for (int j = chunk_start; j < chunk_end; j++)
         {
@@ -133,7 +133,7 @@ private:
             // Use hit objects' material
             ray scattered_ray;
             color attenuation;
-            color color_from_emission = rec.mat->emitted(rec.u, rec.v, rec.p);
+            color color_from_emission = rec.mat->emitted(r, rec, rec.u, rec.v, rec.p);
 
             bool scatters = rec.mat->scatter(r, rec, attenuation, scattered_ray);
             if (scatters)

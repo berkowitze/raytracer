@@ -6,14 +6,20 @@ import matplotlib.image as mpimg
 import subprocess
 import sys
 
+
 filename = sys.argv[1]
+print("ctrl-c to quit at any time")
 # set recursion limit much higher
 sys.setrecursionlimit(10**6)
+done = False
+
 
 # taken from https://stackoverflow.com/a/45734500
 def mypause(interval):
-    backend = plt.rcParams['backend']
-    if backend in matplotlib.rcsetup.interactive_bk:
+    backend = plt.rcParams["backend"]
+    if backend in matplotlib.backends.backend_registry.list_builtin(
+        matplotlib.backends.BackendFilter.INTERACTIVE
+    ):
         figManager = matplotlib._pylab_helpers.Gcf.get_active()
         if figManager is not None:
             canvas = figManager.canvas
@@ -23,14 +29,15 @@ def mypause(interval):
             return
 
 
-
 def _update():
     global done
-    result = subprocess.run(["python", "multiprocess.py", filename], capture_output=True, text=True)
-    # last line output: print(f"Preview={preview_filename}, Progress={100 * (1 - incomplete_pixels / (image_width * image_height)):.2f}%")
+    result = subprocess.run(
+        ["python", "multiprocess.py", filename], capture_output=True, text=True
+    )
+    output = result.stdout.split("\n")
 
     try:
-        fn = result.stdout.split('\n')[-2].split('=')[1].split(',')[0]
+        fn = output[-3].split(": ")[1]
     except IndexError:
         done = True
         time.sleep(0.5)
@@ -38,11 +45,11 @@ def _update():
         return f"out/{filename}.png"
 
     try:
-        progress = float(result.stdout.split('\n')[-2].split('=')[2].split('%')[0])
-        print(f"Progress: {progress:.2f}%", end='\r')
+        progress = float(output[-2].split(": ")[1].strip("%"))
+        print(f"Progress: {progress:.2f}%", end="\r")
+        fig.canvas.manager.set_window_title(f"Preview of {filename} - {progress:.2f}%")
     except (IndexError, ValueError):
         pass
-
 
     return fn
 
@@ -53,9 +60,17 @@ def update_image(ax, fig):
     ax.clear()
     ax.imshow(img)
     fig.canvas.draw()
-    mypause(3)
+    if done:
+        return
+    try:
+        mypause(3)
+    except KeyboardInterrupt:
+        print("\nQuitting...")
+        sys.exit(1)
+
     os.remove(preview_filename)
     update_image(ax, fig)  # Recursive update
+
 
 plt.ion()
 
@@ -66,10 +81,18 @@ fig.canvas.manager.set_window_title(f"Preview of {filename}")
 preview_filename = _update()
 img = mpimg.imread(preview_filename)
 ax.imshow(img)
-plt.axis('off')  # Turn off axes
+plt.axis("off")  # Turn off axes
 
 # Start the recursive image update
-update_image(ax, fig)
+if not done:
+    update_image(ax, fig)
 
+fig.canvas.manager.set_window_title(f"Preview of {filename} - 100%")
+plt.ioff()
+print(f"Final file in out/{filename}.png")
 # Display the plot
-plt.show()
+try:
+    plt.show()
+except KeyboardInterrupt:
+    print("\nQuitting...")
+    sys.exit(1)

@@ -2,11 +2,11 @@
 #define ROTATE_H
 
 #include "../hittable.h"
-
+// rotate about y axis
 class rotate : public hittable
 {
 public:
-  rotate(shared_ptr<hittable> object, int axis, double rotation_degrees) : axis(axis), object(object)
+  rotate(shared_ptr<hittable> object, int axis, double rotation_degrees) : object(object)
   {
     cos_theta = cos(degrees_to_radians(rotation_degrees));
     sin_theta = sin(degrees_to_radians(rotation_degrees));
@@ -61,7 +61,7 @@ public:
   }
 
 private:
-  int axis; // 0 = x, 1 = y, 2 = z
+  // int axis; // 0 = x, 1 = y, 2 = z
   double cos_theta;
   double sin_theta;
 
@@ -70,37 +70,37 @@ private:
 
   vec3 get_rotated_vector(const vec3 &p) const
   {
-    if (axis == 0)
-    {
-      double yp = cos_theta * p.y() - sin_theta * p.z();
-      double zp = sin_theta * p.y() + cos_theta * p.z();
-      return vec3(p.x(), yp, zp);
-    }
-    else if (axis == 1)
-    {
-      double xp = (cos_theta * p.x()) - (sin_theta * p.z());
-      double zp = (sin_theta * p.x()) + (cos_theta * p.z());
-      return vec3(xp, p.y(), zp);
-    }
-    // not implemented
-    return p;
+    // if (axis == 0)
+    // {
+    //   double yp = cos_theta * p.y() - sin_theta * p.z();
+    //   double zp = sin_theta * p.y() + cos_theta * p.z();
+    //   return vec3(p.x(), yp, zp);
+    // }
+    // else if (axis == 1)
+    // {
+    double xp = (cos_theta * p.x()) - (sin_theta * p.z());
+    double zp = (sin_theta * p.x()) + (cos_theta * p.z());
+    return vec3(xp, p.y(), zp);
+    // }
+    // // not implemented
+    // return p;
   }
 
   vec3 get_negative_rotated_vector(const vec3 &p) const
   {
-    if (axis == 0)
-    {
-      double y = cos_theta * p.y() + sin_theta * p.z();
-      double z = -sin_theta * p.y() + cos_theta * p.z();
-      return vec3(p.x(), y, z);
-    }
-    else if (axis == 1)
-    {
-      double x = (cos_theta * p.x()) + (sin_theta * p.z());
-      double z = (-sin_theta * p.x()) + (cos_theta * p.z());
-      return vec3(x, p.y(), z);
-    }
-    return p;
+    // if (axis == 0)
+    // {
+    //   double y = cos_theta * p.y() + sin_theta * p.z();
+    //   double z = -sin_theta * p.y() + cos_theta * p.z();
+    //   return vec3(p.x(), y, z);
+    // }
+    // else if (axis == 1)
+    // {
+    double x = (cos_theta * p.x()) + (sin_theta * p.z());
+    double z = (-sin_theta * p.x()) + (cos_theta * p.z());
+    return vec3(x, p.y(), z);
+    // }
+    // return p;
   }
 };
 

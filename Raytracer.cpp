@@ -51,8 +51,8 @@ void lots_of_balls(int chunk)
         }
     }
 
-    auto checker = make_shared<checker_texture>(0.32, color(.2, .3, .1), color(.9, .9, .9));
-    world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(checker)));
+    // auto checker = make_shared<checker_texture>(0.32, color(.2, .3, .1), color(.9, .9, .9));
+    // world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(checker)));
 
     // Big spheres in the middle (copy-pasted code from https://raytracing.github.io/books/RayTracingInOneWeekend.html#positionablecamera)
     auto material1 = make_shared<dielectric>(1.5);
@@ -70,7 +70,7 @@ void lots_of_balls(int chunk)
     main_camera.aspect_ratio = 16.0 / 9.0;
     // For perf testing, keep these as 600 300 40
     main_camera.image_width = 600;
-    main_camera.samples_per_pixel = 300;
+    main_camera.samples_per_pixel = 400;
     main_camera.max_depth = 40;
     // main_camera.image_width = 1920;
     // main_camera.samples_per_pixel = 1000;
@@ -464,7 +464,7 @@ void book_2_final_scene(int chunk)
     // cam.image_width = 1000;
     cam.image_width = 600;
     // cam.samples_per_pixel = 10000;
-    cam.samples_per_pixel = 1000;
+    cam.samples_per_pixel = 5000;
     cam.max_depth = 30;
     cam.background = color(0, 0, 0);
 
@@ -491,7 +491,7 @@ int main(int argc, char **argv)
         }
     }
 
-    switch (1)
+    switch (10)
     {
     case 1:
         lots_of_balls(chunk);

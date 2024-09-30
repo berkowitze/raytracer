@@ -23,6 +23,13 @@ void write_color(std::ostream &out, const color &pixel_color)
 	auto g = linear_to_gamma(pixel_color.y());
 	auto b = linear_to_gamma(pixel_color.z());
 
+	if (r != r)
+		r = 0.0;
+	if (g != g)
+		g = 0.0;
+	if (b != b)
+		b = 0.0;
+
 	static const interval intensity(0.000, 0.999);
 
 	int rbyte = int(256 * intensity.clamp(r));

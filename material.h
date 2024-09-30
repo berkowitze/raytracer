@@ -16,7 +16,7 @@ public:
     return false;
   }
 
-  virtual color emitted(double u, double v, const point3 &p) const
+  virtual color emitted(const ray &r_in, const hit_record &rec, double u, double v, const point3 &p) const
   {
     return color(0);
   }
@@ -113,8 +113,12 @@ public:
   diffuse_light(shared_ptr<texture> tex) : texture(tex) {}
   diffuse_light(const color &emission_color) : texture(make_shared<solid_color>(emission_color)) {}
 
-  color emitted(double u, double v, const point3 &p) const override
+  color emitted(const ray &r_in, const hit_record &rec, double u, double v, const point3 &p) const override
   {
+    if (!rec.front_face)
+    {
+      return color();
+    }
     return texture->value(u, v, p);
   }
 
