@@ -21,4 +21,4 @@ make run
 make watch
 ```
 
-The commands will output preview commands you can paste into a new terminal window to get a live-updating preview of the render.
+The commands will output preview commands you can paste into a new terminal window to get a live-updating preview of the render. You'll need Python and matplotlib for this functionality.
