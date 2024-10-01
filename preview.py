@@ -55,11 +55,18 @@ def _update():
 
 
 def update_image(ax, fig):
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+
+    # Update the image
     preview_filename = _update()
     img = mpimg.imread(preview_filename)
     ax.clear()
     ax.imshow(img)
-    fig.canvas.draw()
+
+    # Restore the previous zoom settings
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
     if done:
         return
     try:
