@@ -453,6 +453,17 @@ void book_2_final_scene(int chunk)
         boxes2.add(make_shared<sphere>(point3::random(0, 165), 10, white));
     }
 
+    // add a glass cube to the right of the glass sphere
+    hittable_list boxes3;
+    auto glass = make_shared<dielectric>(1.5);
+    boxes3.add(box(point3(-10), point3(175), glass));
+    boxes3.add(box(point3(-10.2), point3(175.2), glass));
+
+    world.add(make_shared<translate>(
+        make_shared<rotate>(
+            make_shared<bvh_node>(boxes3), 1, 15),
+        vec3(-100, 270, 395)));
+
     world.add(make_shared<translate>(
         make_shared<rotate>(
             make_shared<bvh_node>(boxes2), 1, 15),
@@ -462,9 +473,9 @@ void book_2_final_scene(int chunk)
 
     cam.aspect_ratio = 1.0;
     // cam.image_width = 1000;
-    cam.image_width = 600;
-    // cam.samples_per_pixel = 10000;
-    cam.samples_per_pixel = 5000;
+    cam.image_width = 800;
+    cam.samples_per_pixel = 10000;
+    // cam.samples_per_pixel = 1000;
     cam.max_depth = 30;
     cam.background = color(0, 0, 0);
 
