@@ -41,7 +41,7 @@ def _update():
     except IndexError:
         done = True
         time.sleep(0.5)
-        print("Done")
+        # print("Done")
         return f"out/{filename}.png"
 
     try:
@@ -96,7 +96,7 @@ if not done:
 
 fig.canvas.manager.set_window_title(f"Preview of {filename} - 100%")
 plt.ioff()
-print(f"Final file in out/{filename}.png")
+# print(f"Final file in out/{filename}.png")
 # Display the plot
 try:
     plt.show()

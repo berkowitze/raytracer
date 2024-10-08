@@ -5,9 +5,18 @@
 #include "bvh.h"
 #include "hittables/sphere.h"
 #include "hittables/quad.h"
+#include "hittables/triangle.h"
 #include "hittables/translate.h"
 #include "hittables/rotate.h"
 #include "hittables/constant_medium.h"
+#include "load_gltf.h"
+
+using namespace tinygltf;
+
+Model model;
+TinyGLTF loader;
+std::string err;
+std::string warn;
 
 double lerp(double a, double b, double t)
 {
@@ -489,6 +498,114 @@ void book_2_final_scene(int chunk)
     cam.render(world, chunk, true);
 }
 
+void triangles(int chunk)
+{
+
+    hittable_list world;
+
+    // for (int i = 0; i < 6; i++)
+    // {
+    //     world.add(make_shared<tri>(
+    //         random_unit_vector() * 2 - 1,
+    //         random_unit_vector() * 2 - 1,
+    //         random_unit_vector() * 2 - 1,
+    //         red));
+    // }
+
+    // world.add(make_shared<tri>(
+    //     point3(-1, 0, -1),
+    //     point3(1, 0, -1),
+    //     point3(0, 1, -1),
+    //     white));
+
+    // world.add(tri_box(point3(-1, -1, -1), point3(1, 1, 1), red));
+    // int N = 64;
+    // for (int i = 0; i < N; i++)
+    // {
+    //     vec3 r0 = random_unit_vector();
+    //     vec3 r1 = random_unit_vector();
+    //     vec3 r2 = random_unit_vector();
+
+    //     vec3 p1 = r0 * 9 - vec3(5);
+    //     vec3 p2 = p1 + r1;
+    //     vec3 p3 = p1 + r2;
+
+    //     world.add(make_shared<tri>(
+    //         p1,
+    //         p2,
+    //         p3,
+    //         red));
+    // }
+
+    auto red = make_shared<lambertian>(color(0.65, 0.05, 0.05));
+    auto white = make_shared<lambertian>(.73);
+
+    // Scalene on the ground
+    world.add(make_shared<tri>(
+        point3(0, 0, 0),
+        point3(1, 0, 1),
+        point3(.6, 0, .3),
+        vec3(0, 1, 0),
+        red));
+
+    camera cam;
+
+    cam.aspect_ratio = 1.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth = 30;
+    // light blue
+    cam.background = color(0.70, 0.80, 1.00);
+
+    cam.vfov = 40;
+    cam.lookfrom = point3(0, 3, 0);
+    cam.lookat = point3(0, 0, 0);
+    cam.vup = vec3(0, 0, 1);
+
+    cam.defocus_angle = 0;
+
+    cam.render(world, chunk, true);
+}
+
+int simple_gltf(int chunk)
+{
+    auto white = make_shared<lambertian>(.73);
+    // bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "gltf/2CylinderEngine.gltf");
+    bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "gltf/weird cube.gltf");
+
+    if (!warn.empty())
+    {
+        printf("Warn: %s\n", warn.c_str());
+    }
+
+    if (!err.empty())
+    {
+        printf("Err: %s\n", err.c_str());
+    }
+
+    if (!ret)
+    {
+        printf("Failed to parse glTF\n");
+        return -1;
+    }
+
+    hittable_list world;
+    camera cam;
+    int success = add_gltf_to_world(world, model);
+    if (success != 0)
+    {
+        return success;
+    }
+    world = hittable_list(make_shared<bvh_node>(world));
+    set_camera_from_gltf(cam, model);
+
+    cam.render(world, chunk, true);
+
+    return 0;
+
+    // std::cout << "Mesh mode is " << primitive.mode << std::endl;
+}
+
 int main(int argc, char **argv)
 {
     // parse --chunk=int from argv
@@ -502,7 +619,7 @@ int main(int argc, char **argv)
         }
     }
 
-    switch (10)
+    switch (12)
     {
     case 1:
         lots_of_balls(chunk);
@@ -534,6 +651,11 @@ int main(int argc, char **argv)
     case 10:
         book_2_final_scene(chunk);
         break;
+    case 11:
+        triangles(chunk);
+        break;
+    case 12:
+        return simple_gltf(chunk);
     }
 }
 

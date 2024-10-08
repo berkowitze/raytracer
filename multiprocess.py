@@ -19,6 +19,11 @@ def call_chunk_command(filename: str, chunk: int):
     print(f"Chunk {chunk} done")
 
 
+def call_preview_command(filename: str):
+    """Process a single chunk by invoking the raytracer command."""
+    subprocess.Popen(["python", "preview.py", filename])
+
+
 def call_raytracer_command():
     """Main function to manage raytracer execution and chunk processing."""
     filename = str(time.time())  # Use a timestamp for unique filenames
@@ -31,9 +36,8 @@ def call_raytracer_command():
     with open(f"out/{filename}.ppm", "w") as f:
         subprocess.call(["./raytracer", "--chunk=-2"], stdout=f)
 
-    input("Press Enter to start processing chunks...")
-
-    pool = multiprocessing.Pool(multiprocessing.cpu_count())
+    call_preview_command(filename)
+    pool = multiprocessing.Pool(multiprocessing.cpu_count() - 1)
 
     t_start = time.time()
     for i in range(NUM_CHUNKS):

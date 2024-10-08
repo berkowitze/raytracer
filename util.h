@@ -18,6 +18,11 @@ inline double degrees_to_radians(double degrees)
 	return degrees * pi / 180.0;
 }
 
+inline double radians_to_degrees(double radians)
+{
+	return radians * 180.0 / pi;
+}
+
 inline double random_double()
 {
 	// Double from 0 to 1
@@ -60,5 +65,6 @@ inline double clamp(double min, double value, double max)
 #include "aabb.h"
 #include "bvh.h"
 #include "camera.h"
+#include "load_gltf.h"
 
 #endif

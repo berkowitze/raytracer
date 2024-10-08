@@ -15,7 +15,7 @@ public:
     color background;
 
     double defocus_angle = 0;   // angle of ray offset from lookfrom in the defocus disk, to the rendered pixel
-    double focus_distance = 10; // distance from lookfrom to plane of perfect focus
+    double focus_distance = 50; // distance from lookfrom to plane of perfect focus
 
     int image_width = 100;
     int samples_per_pixel = 10;
@@ -76,7 +76,7 @@ private:
         image_height = std::max(1, int(image_width / aspect_ratio));
         camera_center = lookfrom;
 
-        // Camera
+        // Camera vertical field of view
         double vfov_rad = degrees_to_radians(vfov);
         double h = std::tan(vfov_rad / 2);
         double viewport_height = 2 * h * focus_distance;
