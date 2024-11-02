@@ -541,12 +541,12 @@ void triangles(int chunk)
     auto white = make_shared<lambertian>(.73);
 
     // Scalene on the ground
-    world.add(make_shared<tri>(
-        point3(0, 0, 0),
-        point3(1, 0, 1),
-        point3(.6, 0, .3),
-        vec3(0, 1, 0),
-        red));
+    // world.add(make_shared<tri>(
+    //     point3(0, 0, 0),
+    //     point3(1, 0, 1),
+    //     point3(.6, 0, .3),
+    //     vec3(0, 1, 0),
+    //     red));
 
     camera cam;
 

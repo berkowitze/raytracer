@@ -42,3 +42,6 @@ preview:
 watch:
 	@make run
 	@fswatch -o *.cpp *.h  | xargs -n1 make run
+
+debug:
+	make clean && make && ./raytracer

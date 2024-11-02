@@ -1,10 +1,5 @@
 #ifndef LOAD_GLTF_H
 #define LOAD_GLTF_H
-#define TINYGLTF_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "gltf/tiny_gltf.h"
 
 #include <memory>
 #include "vec3.h"
@@ -47,9 +42,32 @@ int add_gltf_to_world(hittable_list &world, Model model)
       auto normal_buffer_view = model.bufferViews[normal_accessor.bufferView];
       auto normal_buffer = model.buffers[normal_buffer_view.buffer];
       float *normals = reinterpret_cast<float *>(&normal_buffer.data[normal_buffer_view.byteOffset + normal_accessor.byteOffset]);
-      // auto base_color = model.materials[primitive.material].pbrMetallicRoughness.baseColorFactor;
-      // auto material = make_shared<lambertian>(color(base_color[0], base_color[1], base_color[2]));
-      auto material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
+
+      auto uv_accessor = model.accessors[primitive.attributes["TEXCOORD_0"]];
+      auto uv_buffer_view = model.bufferViews[uv_accessor.bufferView];
+      auto uv_buffer = model.buffers[uv_buffer_view.buffer];
+      float *uvs = reinterpret_cast<float *>(&uv_buffer.data[uv_buffer_view.byteOffset + uv_accessor.byteOffset]);
+      shared_ptr<material> material;
+      if (primitive.material < 0)
+      {
+        material = white;
+      }
+      else
+      {
+        auto pbr = model.materials[primitive.material].pbrMetallicRoughness;
+        if (pbr.baseColorTexture.index >= 0)
+        {
+          // std::cout << "Using image texture for model named " << mesh.name << std::endl;
+          int tex_index = pbr.baseColorTexture.index;
+          auto image = model.images[model.textures[tex_index].source];
+          material = make_shared<lambertian>(make_shared<image_texture>(image));
+        }
+        else
+        {
+          // std::cout << "Using base color factor for model named " << mesh.name << std::endl;
+          material = make_shared<lambertian>(color(pbr.baseColorFactor[0], pbr.baseColorFactor[1], pbr.baseColorFactor[2]));
+        }
+      }
 
       for (int i = 0; i < index_accessor.count / 3; i++)
       {
@@ -78,7 +96,21 @@ int add_gltf_to_world(hittable_list &world, Model model)
         point3 pos_2 = point3(pos_2_y, -pos_2_x, pos_2_z);
         vec3 normal = vec3(-norm_x, norm_y, norm_z);
 
-        world.add(make_shared<tri>(pos_0, pos_1, pos_2, normal, material));
+        float pos_0_u = uvs[2 * tri_index_0 + 0];
+        float pos_0_v = uvs[2 * tri_index_0 + 1];
+        vec3 uv0 = vec3(pos_0_u, 1 - pos_0_v, 0);
+
+        float pos_1_u = uvs[2 * tri_index_1 + 0];
+        float pos_1_v = uvs[2 * tri_index_1 + 1];
+        vec3 uv1 = vec3(pos_1_u, 1 - pos_1_v, 0);
+
+        float pos_2_u = uvs[2 * tri_index_2 + 0];
+        float pos_2_v = uvs[2 * tri_index_2 + 1];
+        vec3 uv2 = vec3(pos_2_u, 1 - pos_2_v, 0);
+
+        // std::cout << "Adding triangle with pos_0: " << pos_0 << " pos_1: " << pos_1 << " pos_2: " << pos_2 << " uv0: " << uv0 << " uv1: " << uv1 << " uv2: " << uv2 << std::endl;
+
+        world.add(make_shared<tri>(pos_0, pos_1, pos_2, normal, uv0, uv1, uv2, material));
       }
     }
   }

@@ -65,6 +65,8 @@
     "iterator": "cpp",
     "map": "cpp",
     "memory": "cpp",
-    "valarray": "cpp"
+    "valarray": "cpp",
+    "fstream": "cpp",
+    "iomanip": "cpp"
   }
 }

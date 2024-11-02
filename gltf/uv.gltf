@@ -9,16 +9,11 @@
 			"name":"Scene",
 			"nodes":[
 				0,
-				1,
-				2
+				1
 			]
 		}
 	],
 	"nodes":[
-		{
-			"mesh":0,
-			"name":"Plane"
-		},
 		{
 			"camera":0,
 			"name":"Camera",
@@ -35,8 +30,8 @@
 			]
 		},
 		{
-			"mesh":1,
-			"name":"Cube"
+			"mesh":0,
+			"name":"Plane"
 		}
 	],
 	"cameras":[
@@ -66,31 +61,16 @@
 	],
 	"meshes":[
 		{
-			"name":"Plane",
+			"name":"Plane.001",
 			"primitives":[
 				{
 					"attributes":{
 						"POSITION":0,
 						"NORMAL":1,
-						"TEXCOORD_0":2,
-						"TANGENT":3
+						"TEXCOORD_0":2
 					},
-					"indices":4,
+					"indices":3,
 					"material":0
-				}
-			]
-		},
-		{
-			"name":"Cube",
-			"primitives":[
-				{
-					"attributes":{
-						"POSITION":5,
-						"NORMAL":6,
-						"TEXCOORD_0":7,
-						"TANGENT":8
-					},
-					"indices":9
 				}
 			]
 		}
@@ -139,54 +119,8 @@
 		},
 		{
 			"bufferView":3,
-			"componentType":5126,
-			"count":4,
-			"type":"VEC4"
-		},
-		{
-			"bufferView":4,
 			"componentType":5123,
 			"count":6,
-			"type":"SCALAR"
-		},
-		{
-			"bufferView":5,
-			"componentType":5126,
-			"count":24,
-			"max":[
-				-0.1227560043334961,
-				1.2118929624557495,
-				2.676602840423584
-			],
-			"min":[
-				-2.122756004333496,
-				-0.7881070375442505,
-				0.676602840423584
-			],
-			"type":"VEC3"
-		},
-		{
-			"bufferView":6,
-			"componentType":5126,
-			"count":24,
-			"type":"VEC3"
-		},
-		{
-			"bufferView":7,
-			"componentType":5126,
-			"count":24,
-			"type":"VEC2"
-		},
-		{
-			"bufferView":8,
-			"componentType":5126,
-			"count":24,
-			"type":"VEC4"
-		},
-		{
-			"bufferView":9,
-			"componentType":5123,
-			"count":36,
 			"type":"SCALAR"
 		}
 	],
@@ -211,44 +145,8 @@
 		},
 		{
 			"buffer":0,
-			"byteLength":64,
-			"byteOffset":128,
-			"target":34962
-		},
-		{
-			"buffer":0,
 			"byteLength":12,
-			"byteOffset":192,
-			"target":34963
-		},
-		{
-			"buffer":0,
-			"byteLength":288,
-			"byteOffset":204,
-			"target":34962
-		},
-		{
-			"buffer":0,
-			"byteLength":288,
-			"byteOffset":492,
-			"target":34962
-		},
-		{
-			"buffer":0,
-			"byteLength":192,
-			"byteOffset":780,
-			"target":34962
-		},
-		{
-			"buffer":0,
-			"byteLength":384,
-			"byteOffset":972,
-			"target":34962
-		},
-		{
-			"buffer":0,
-			"byteLength":72,
-			"byteOffset":1356,
+			"byteOffset":128,
 			"target":34963
 		}
 	],
@@ -260,7 +158,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":1428,
+			"byteLength":140,
 			"uri":"uv.bin"
 		}
 	]

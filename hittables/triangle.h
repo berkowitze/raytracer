@@ -11,8 +11,11 @@ public:
       const point3 &v2,
       const point3 &v3,
       const vec3 _normal,
+      const point3 &uv1,
+      const point3 &uv2,
+      const point3 &uv3,
       shared_ptr<material> material)
-      : v1(v1), v2(v2), v3(v3), material(material)
+      : v1(v1), v2(v2), v3(v3), uv1(uv1), uv2(uv2), uv3(uv3), material(material)
   {
     u = v2 - v1;
     v = v3 - v1;
@@ -60,9 +63,11 @@ public:
       return false;
 
     point3 intersection = r.at(t);
+    float wd = 1 - ud - vd;
+    vec3 uv = wd * uv1 + ud * uv2 + vd * uv3;
 
-    hit_record.u = ud;
-    hit_record.v = vd;
+    hit_record.u = uv.x();
+    hit_record.v = uv.y();
     hit_record.p = intersection;
     hit_record.t = t;
     hit_record.set_face_normal(r, normal);
@@ -77,6 +82,10 @@ private:
 
   vec3 u;
   vec3 v;
+
+  vec3 uv1;
+  vec3 uv2;
+  vec3 uv3;
 
   vec3 normal;
   double D;

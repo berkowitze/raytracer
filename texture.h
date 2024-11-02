@@ -1,10 +1,17 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
+#define TINYGLTF_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "gltf/tiny_gltf.h"
 
 #include <memory>
 #include "color.h"
 #include <algorithm>
 // #include "rtw_stb_image.h"
+
+using namespace tinygltf;
 
 class texture
 {
@@ -54,31 +61,29 @@ private:
   std::shared_ptr<texture> odd;
 };
 
-// class image_texture : public texture
-// {
-// public:
-//   image_texture(const char *filename) : image(filename) {}
+class image_texture : public texture
+{
+public:
+  image_texture(Image image) : image(image) {}
 
-//   color value(double u, double v, const point3 &p) const override
-//   {
-//     if (image.height() <= 0)
-//     {
-//       return color(0, 1, 1);
-//     }
+  color value(double u, double v, const point3 &p) const override
+  {
+    u = interval(0, 1).clamp(u);
+    v = 1.0 - interval(0, 1).clamp(v); // flip v to be image coordinates
 
-//     u = interval(0, 1).clamp(u);
-//     v = 1.0 - interval(0, 1).clamp(v); // flip v to be image coordinates
+    int i = u * image.width;
+    int j = v * image.height;
+    int start_index = 4 * i + 4 * image.width * j;
+    double color_scale = 1.0 / 255.0;
+    double r = color_scale * image.image[start_index];
+    double g = color_scale * image.image[start_index + 1];
+    double b = color_scale * image.image[start_index + 2];
+    return color(r, g, b);
+  }
 
-//     int i = u * image.width();
-//     int j = v * image.height();
-//     auto pixel = image.pixel_data(i, j);
-//     double color_scale = 1.0 / 255.0;
-//     return color(color_scale * pixel[0], color_scale * pixel[1], color_scale * pixel[2]);
-//   }
-
-// private:
-//   rtw_image image;
-// };
+private:
+  Image image;
+};
 
 class noise_texture : public texture
 {
