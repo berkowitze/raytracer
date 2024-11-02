@@ -130,10 +130,10 @@ void fantasy_planet(int chunk)
 {
     hittable_list world;
 
-    auto world_tex = make_shared<image_texture>("textures/Map-111.png");
+    // auto world_tex = make_shared<image_texture>("textures/Map-111.png");
 
-    world.add(make_shared<sphere>(point3(0, -10, 0), 10, make_shared<lambertian>(world_tex)));
-    world.add(make_shared<sphere>(point3(0, 10, 0), 10, make_shared<lambertian>(world_tex)));
+    // world.add(make_shared<sphere>(point3(0, -10, 0), 10, make_shared<lambertian>(world_tex)));
+    // world.add(make_shared<sphere>(point3(0, 10, 0), 10, make_shared<lambertian>(world_tex)));
 
     camera cam;
 
@@ -448,8 +448,8 @@ void book_2_final_scene(int chunk)
     world.add(make_shared<constant_medium>(boundary, 0.0001, color(1)));
 
     // Add fantasy globe
-    auto worldmap = make_shared<lambertian>(make_shared<image_texture>("textures/Map-111.png"));
-    world.add(make_shared<sphere>(point3(400, 200, 400), 100, worldmap));
+    // auto worldmap = make_shared<lambertian>(make_shared<image_texture>("textures/Map-111.png"));
+    // world.add(make_shared<sphere>(point3(400, 200, 400), 100, worldmap));
 
     auto perlin_texture = make_shared<noise_texture>(0.2);
     world.add(make_shared<sphere>(point3(220, 280, 300), 80, make_shared<lambertian>(perlin_texture)));
@@ -569,9 +569,36 @@ void triangles(int chunk)
 
 int simple_gltf(int chunk)
 {
+    // vec3 p = vec3(0, 1, 0);
+    // vec3 a = vec3(1, 0, 0);
+    // vec3 new_p = rotate_about_axis(pi / 2, a, p);
+    // std::cout << "Rotated " << p << " to " << new_p << std::endl;
+    // return 0;
+    // loader.SetImageLoader([](tinygltf::Image *image, int image_idx, std::string *err, std::string *warn, int req_width, int req_height, const unsigned char *bytes, int size, void *user_data) -> bool
+    //                       {
+    //                           int width, height, comp;
+    //                           unsigned char *data = stbi_load_from_memory(bytes, size, &width, &height, &comp, req_width);
+    //                           if (!data)
+    //                           {
+    //                               if (err)
+    //                               {
+    //                                   *err = "Failed to load image: " + std::string(stbi_failure_reason());
+    //                               }
+    //                               return false;
+    //                           }
+    //                           image->width = width;
+    //                           image->height = height;
+    //                           image->component = comp;
+    //                           image->image.resize(width * height * comp);
+    //                           std::copy(data, data + width * height * comp, image->image.begin());
+    //                           stbi_image_free(data);
+    //                           return true; }, nullptr);
+
     auto white = make_shared<lambertian>(.73);
     // bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "gltf/2CylinderEngine.gltf");
-    bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "gltf/weird cube.gltf");
+    bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "gltf/uv.gltf");
+    // bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "gltf/book.gltf");
+    // bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "gltf/axes.gltf");
 
     if (!warn.empty())
     {

@@ -2,7 +2,7 @@
 #define LOAD_GLTF_H
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
-#define TINYGLTF_NO_STB_IMAGE
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "gltf/tiny_gltf.h"
 
@@ -12,6 +12,7 @@
 #include "hittables/hittable_list.h"
 
 using namespace tinygltf;
+// When converting from gltf, this raytracer uses gltf.(y, -x, z) for the coordinate system
 
 int add_gltf_to_world(hittable_list &world, Model model)
 {
@@ -46,8 +47,9 @@ int add_gltf_to_world(hittable_list &world, Model model)
       auto normal_buffer_view = model.bufferViews[normal_accessor.bufferView];
       auto normal_buffer = model.buffers[normal_buffer_view.buffer];
       float *normals = reinterpret_cast<float *>(&normal_buffer.data[normal_buffer_view.byteOffset + normal_accessor.byteOffset]);
-      auto base_color = model.materials[primitive.material].pbrMetallicRoughness.baseColorFactor;
-      auto material = make_shared<lambertian>(color(base_color[0], base_color[1], base_color[2]));
+      // auto base_color = model.materials[primitive.material].pbrMetallicRoughness.baseColorFactor;
+      // auto material = make_shared<lambertian>(color(base_color[0], base_color[1], base_color[2]));
+      auto material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
 
       for (int i = 0; i < index_accessor.count / 3; i++)
       {
@@ -71,10 +73,10 @@ int add_gltf_to_world(hittable_list &world, Model model)
         float norm_y = normals[3 * tri_index_0 + 1];
         float norm_z = normals[3 * tri_index_0 + 2];
 
-        point3 pos_0 = point3(-pos_0_x, pos_0_z, pos_0_y);
-        point3 pos_1 = point3(-pos_1_x, pos_1_z, pos_1_y);
-        point3 pos_2 = point3(-pos_2_x, pos_2_z, pos_2_y);
-        vec3 normal = vec3(-norm_x, norm_z, norm_y);
+        point3 pos_0 = point3(pos_0_y, -pos_0_x, pos_0_z);
+        point3 pos_1 = point3(pos_1_y, -pos_1_x, pos_1_z);
+        point3 pos_2 = point3(pos_2_y, -pos_2_x, pos_2_z);
+        vec3 normal = vec3(-norm_x, norm_y, norm_z);
 
         world.add(make_shared<tri>(pos_0, pos_1, pos_2, normal, material));
       }
@@ -94,9 +96,21 @@ void set_camera_from_gltf(camera &cam, Model model)
       break;
     }
   }
+  if (camera_node.camera < 0)
+  {
+    std::cout << "No camera found in gltf file" << std::endl;
+    exit(1);
+  }
 
-  cam.lookfrom = point3(camera_node.translation[0], camera_node.translation[2], -camera_node.translation[1]);
-  cam.lookat = point3();
+  quat rotation(vec3(camera_node.rotation[0], camera_node.rotation[1], camera_node.rotation[2]), camera_node.rotation[3]);
+  //  = rotation * vec3(0, 0, -1);
+  vec3 basis = rotation * vec3(0, 0, 1);
+  cam.lookfrom = point3(camera_node.translation[1], -camera_node.translation[0], camera_node.translation[2]);
+  cam.lookat = cam.lookfrom - vec3(basis.y(), -basis.x(), basis.z());
+  // std::cout << "Lookfrom: " << cam.lookfrom << " l" << cam.lookfrom.length() << std::endl;
+  // std::cout << "Lookat: " << cam.lookat << " l" << cam.lookat.length() << std::endl;
+  // exit(1);
+
   cam.aspect_ratio = model.cameras[0].perspective.aspectRatio;
   cam.vfov = radians_to_degrees(model.cameras[0].perspective.yfov);
   cam.vup = vec3(0, 0, 1);
@@ -107,6 +121,7 @@ void set_camera_from_gltf(camera &cam, Model model)
   cam.max_depth = 30;
   // light blue
   cam.background = color(0.70, 0.80, 1.00);
+  // exit(1);
 }
 
 #endif
