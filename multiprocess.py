@@ -5,7 +5,7 @@ import subprocess
 
 # Number of chunks for parallel processing
 NUM_CHUNKS = 20
-NUM_RESERVED_CORES = 2
+NUM_RESERVED_CORES = 1
 
 
 def call_chunk_command(filename: str, chunk: int):

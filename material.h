@@ -9,6 +9,8 @@ class material
 public:
   virtual ~material() = default;
 
+  virtual double get_alpha() const { return 1; }
+
   // Return whether or not the ray scatters
   virtual bool scatter(
       const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered_ray) const
@@ -25,8 +27,10 @@ public:
 class lambertian : public material
 {
 public:
-  lambertian(const color &albedo) : tex(make_shared<solid_color>(albedo)) {}
-  lambertian(shared_ptr<texture> tex) : tex(tex) {}
+  lambertian(const color &albedo, double alpha = 1) : tex(make_shared<solid_color>(albedo)), alpha(alpha) {}
+  lambertian(shared_ptr<texture> tex) : tex(tex), alpha(1) {}
+
+  double get_alpha() const override { return alpha; }
 
   bool scatter(
       const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered_ray) const override
@@ -46,6 +50,7 @@ public:
 
 private:
   shared_ptr<texture> tex;
+  double alpha;
 };
 
 /*

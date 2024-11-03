@@ -73,8 +73,8 @@ int add_gltf_to_world(hittable_list &world, Model model)
         }
         else
         {
-          // std::cout << "Using base color factor for model named " << mesh.name << std::endl;
-          material = make_shared<lambertian>(color(pbr.baseColorFactor[0], pbr.baseColorFactor[1], pbr.baseColorFactor[2]));
+          // std::cout << "Using base color factor size " << pbr.baseColorFactor.size() << " for model named " << mesh.name << std::endl;
+          material = make_shared<lambertian>(color(pbr.baseColorFactor[0], pbr.baseColorFactor[1], pbr.baseColorFactor[2]), pbr.baseColorFactor[3]);
         }
       }
 
@@ -143,11 +143,11 @@ void set_camera_from_gltf(camera &cam, Model model)
   cam.vup = vec3(0, 0, 1);
   cam.defocus_angle = 0;
 
-  cam.image_width = 400;
-  cam.samples_per_pixel = 25;
-  cam.max_depth = 15;
+  cam.image_width = 1920;
+  cam.samples_per_pixel = 600;
+  cam.max_depth = 30;
   // light blue
-  cam.background = color(0.70, 0.80, 1.00);
+  cam.background = color(0.73, 0.79, 1.00);
   // exit(1);
 }
 

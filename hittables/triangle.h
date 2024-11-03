@@ -57,6 +57,12 @@ public:
     if (!ray_t.contains(t))
       return false;
 
+    double alpha = material->get_alpha();
+    if (random_double() > alpha)
+    {
+      return false;
+    }
+
     point3 intersection = r.at(t);
     float wd = 1 - ud - vd;
     vec3 uv = wd * v1.uv + ud * v2.uv + vd * v3.uv;
