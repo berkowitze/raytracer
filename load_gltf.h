@@ -7,7 +7,40 @@
 #include "hittables/hittable_list.h"
 
 using namespace tinygltf;
+
 // When converting from gltf, this raytracer uses gltf.(y, -x, z) for the coordinate system
+
+vec3 read_vec3(float *buffer, int start_index)
+{
+  float x = buffer[start_index];
+  float y = buffer[start_index + 1];
+  float z = buffer[start_index + 2];
+  return vec3(y, -x, z);
+}
+
+vec3 read_vec2(float *buffer, int start_index)
+{
+  float x = buffer[start_index];
+  float y = buffer[start_index + 1];
+  return vec3(x, 1 - y, 0);
+}
+
+float *get_accessor(const Model &model, const Primitive &primitive, std::string attribute_name)
+{
+  auto accessor = model.accessors.at(primitive.attributes.at(attribute_name));
+  auto buffer_view = model.bufferViews[accessor.bufferView];
+  auto buffer = model.buffers[buffer_view.buffer];
+  float *positions = reinterpret_cast<float *>(&buffer.data[buffer_view.byteOffset + accessor.byteOffset]);
+  return positions;
+}
+
+vertex read_vertex(float *positions, float *normals, float *uvs, int index)
+{
+  vec3 pos = read_vec3(positions, 3 * index);
+  vec3 norm = read_vec3(normals, 3 * index);
+  vec3 uv = read_vec2(uvs, 2 * index);
+  return vertex(pos, norm, uv);
+}
 
 int add_gltf_to_world(hittable_list &world, Model model)
 {
@@ -23,30 +56,6 @@ int add_gltf_to_world(hittable_list &world, Model model)
         return -1;
       }
 
-      auto index_accessor = model.accessors[primitive.indices];
-      auto index_buffer_view = model.bufferViews[index_accessor.bufferView];
-      auto index_buffer = model.buffers[index_buffer_view.buffer];
-      if (index_accessor.componentType != TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
-      {
-        printf("Got index buffer type that is not unsigned short, got component %d\n", index_accessor.componentType);
-        return -1;
-      }
-      uint16_t *indices = reinterpret_cast<uint16_t *>(&index_buffer.data[index_buffer_view.byteOffset + index_accessor.byteOffset]);
-
-      auto position_accessor = model.accessors[primitive.attributes["POSITION"]];
-      auto position_buffer_view = model.bufferViews[position_accessor.bufferView];
-      auto position_buffer = model.buffers[position_buffer_view.buffer];
-      float *positions = reinterpret_cast<float *>(&position_buffer.data[position_buffer_view.byteOffset + position_accessor.byteOffset]);
-
-      auto normal_accessor = model.accessors[primitive.attributes["NORMAL"]];
-      auto normal_buffer_view = model.bufferViews[normal_accessor.bufferView];
-      auto normal_buffer = model.buffers[normal_buffer_view.buffer];
-      float *normals = reinterpret_cast<float *>(&normal_buffer.data[normal_buffer_view.byteOffset + normal_accessor.byteOffset]);
-
-      auto uv_accessor = model.accessors[primitive.attributes["TEXCOORD_0"]];
-      auto uv_buffer_view = model.bufferViews[uv_accessor.bufferView];
-      auto uv_buffer = model.buffers[uv_buffer_view.buffer];
-      float *uvs = reinterpret_cast<float *>(&uv_buffer.data[uv_buffer_view.byteOffset + uv_accessor.byteOffset]);
       shared_ptr<material> material;
       if (primitive.material < 0)
       {
@@ -69,48 +78,33 @@ int add_gltf_to_world(hittable_list &world, Model model)
         }
       }
 
+      auto index_accessor = model.accessors[primitive.indices];
+      auto index_buffer_view = model.bufferViews[index_accessor.bufferView];
+      auto index_buffer = model.buffers[index_buffer_view.buffer];
+      if (index_accessor.componentType != TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
+      {
+        printf("Got index buffer type that is not unsigned short, got component %d\n", index_accessor.componentType);
+        return -1;
+      }
+      uint16_t *indices = reinterpret_cast<uint16_t *>(&index_buffer.data[index_buffer_view.byteOffset + index_accessor.byteOffset]);
+
+      float *positions = get_accessor(model, primitive, "POSITION");
+      float *normals = get_accessor(model, primitive, "NORMAL");
+      float *uvs = get_accessor(model, primitive, "TEXCOORD_0");
+
       for (int i = 0; i < index_accessor.count / 3; i++)
       {
         int tri_index_0 = indices[i * 3];
         int tri_index_1 = indices[i * 3 + 1];
         int tri_index_2 = indices[i * 3 + 2];
 
-        float pos_0_x = positions[3 * tri_index_0 + 0];
-        float pos_0_y = positions[3 * tri_index_0 + 1];
-        float pos_0_z = positions[3 * tri_index_0 + 2];
-
-        float pos_1_x = positions[3 * tri_index_1 + 0];
-        float pos_1_y = positions[3 * tri_index_1 + 1];
-        float pos_1_z = positions[3 * tri_index_1 + 2];
-
-        float pos_2_x = positions[3 * tri_index_2 + 0];
-        float pos_2_y = positions[3 * tri_index_2 + 1];
-        float pos_2_z = positions[3 * tri_index_2 + 2];
-
-        float norm_x = normals[3 * tri_index_0 + 0];
-        float norm_y = normals[3 * tri_index_0 + 1];
-        float norm_z = normals[3 * tri_index_0 + 2];
-
-        point3 pos_0 = point3(pos_0_y, -pos_0_x, pos_0_z);
-        point3 pos_1 = point3(pos_1_y, -pos_1_x, pos_1_z);
-        point3 pos_2 = point3(pos_2_y, -pos_2_x, pos_2_z);
-        vec3 normal = vec3(-norm_x, norm_y, norm_z);
-
-        float pos_0_u = uvs[2 * tri_index_0 + 0];
-        float pos_0_v = uvs[2 * tri_index_0 + 1];
-        vec3 uv0 = vec3(pos_0_u, 1 - pos_0_v, 0);
-
-        float pos_1_u = uvs[2 * tri_index_1 + 0];
-        float pos_1_v = uvs[2 * tri_index_1 + 1];
-        vec3 uv1 = vec3(pos_1_u, 1 - pos_1_v, 0);
-
-        float pos_2_u = uvs[2 * tri_index_2 + 0];
-        float pos_2_v = uvs[2 * tri_index_2 + 1];
-        vec3 uv2 = vec3(pos_2_u, 1 - pos_2_v, 0);
+        vertex v0 = read_vertex(positions, normals, uvs, tri_index_0);
+        vertex v1 = read_vertex(positions, normals, uvs, tri_index_1);
+        vertex v2 = read_vertex(positions, normals, uvs, tri_index_2);
 
         // std::cout << "Adding triangle with pos_0: " << pos_0 << " pos_1: " << pos_1 << " pos_2: " << pos_2 << " uv0: " << uv0 << " uv1: " << uv1 << " uv2: " << uv2 << std::endl;
 
-        world.add(make_shared<tri>(pos_0, pos_1, pos_2, normal, uv0, uv1, uv2, material));
+        world.add(make_shared<tri>(v0, v1, v2, material));
       }
     }
   }
@@ -139,6 +133,7 @@ void set_camera_from_gltf(camera &cam, Model model)
   vec3 basis = rotation * vec3(0, 0, 1);
   cam.lookfrom = point3(camera_node.translation[1], -camera_node.translation[0], camera_node.translation[2]);
   cam.lookat = cam.lookfrom - vec3(basis.y(), -basis.x(), basis.z());
+  // cam.lookat = vec3();
   // std::cout << "Lookfrom: " << cam.lookfrom << " l" << cam.lookfrom.length() << std::endl;
   // std::cout << "Lookat: " << cam.lookat << " l" << cam.lookat.length() << std::endl;
   // exit(1);
@@ -148,9 +143,9 @@ void set_camera_from_gltf(camera &cam, Model model)
   cam.vup = vec3(0, 0, 1);
   cam.defocus_angle = 0;
 
-  cam.image_width = 600;
-  cam.samples_per_pixel = 100;
-  cam.max_depth = 30;
+  cam.image_width = 400;
+  cam.samples_per_pixel = 25;
+  cam.max_depth = 15;
   // light blue
   cam.background = color(0.70, 0.80, 1.00);
   // exit(1);

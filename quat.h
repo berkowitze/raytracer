@@ -10,13 +10,12 @@ public:
 
   quat(double x, double y, double z, double w) : w(w), v(x, y, z) {}
   quat(vec3 v, double w) : w(w), v(v) {}
-  quat(double w, vec3 v) : w(w), v(v) {}
   ~quat() = default;
 
   double norm() const;
   quat normalized() const;
   void normalize();
-  void convertToUnitNormQuaternion();
+  void convertToUnitNormQuaternion(double angle);
   quat conjugate() const { return quat(-v, w); }
   quat inverse() const;
 };
@@ -58,7 +57,7 @@ inline quat operator*(const quat &A, double t)
 }
 inline vec3 operator*(const quat &A, const vec3 &B)
 {
-  quat p(0, B);
+  quat p(B, 0);
   quat q = A * p * A.inverse();
   return q.v;
 }
@@ -89,20 +88,22 @@ inline quat quat::inverse() const
   double norm_squared = norm() * norm();
   return quat(-v / norm_squared, w / norm_squared);
 }
-void quat::convertToUnitNormQuaternion()
+void quat::convertToUnitNormQuaternion(double angle)
 {
-  double angle = w;
-  v.normalize();
-  w = cos(angle * 0.5);
-  v *= sin(angle * 0.5);
+  double half_angle = angle * 0.5;
+  w = cos(half_angle);
+  v = unit_vector(v) * sin(half_angle);
 }
+// void quat::setRotation(double angle, const vec3& axis) {
+
+// }
 
 vec3 rotate_about_axis(double angle, vec3 &axis, vec3 &point)
 {
-  quat p(0, point);
+  quat p(point, 0);
   axis.normalize();
-  quat q(angle, axis);
-  q.convertToUnitNormQuaternion();
+  quat q(axis, angle);
+  q.convertToUnitNormQuaternion(angle);
   quat q_inv = q.inverse();
   quat rotated = q * p * q_inv;
   return rotated.v;

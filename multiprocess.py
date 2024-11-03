@@ -4,7 +4,8 @@ import os
 import subprocess
 
 # Number of chunks for parallel processing
-NUM_CHUNKS = 30
+NUM_CHUNKS = 20
+NUM_RESERVED_CORES = 2
 
 
 def call_chunk_command(filename: str, chunk: int):
@@ -37,7 +38,7 @@ def call_raytracer_command():
         subprocess.call(["./raytracer", "--chunk=-2"], stdout=f)
 
     call_preview_command(filename)
-    pool = multiprocessing.Pool(multiprocessing.cpu_count() - 1)
+    pool = multiprocessing.Pool(multiprocessing.cpu_count() - NUM_RESERVED_CORES)
 
     t_start = time.time()
     for i in range(NUM_CHUNKS):

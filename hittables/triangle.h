@@ -7,31 +7,26 @@ class tri : public hittable
 {
 public:
   tri(
-      const point3 &v1,
-      const point3 &v2,
-      const point3 &v3,
-      const vec3 _normal,
-      const point3 &uv1,
-      const point3 &uv2,
-      const point3 &uv3,
+      const vertex &v1,
+      const vertex &v2,
+      const vertex &v3,
       shared_ptr<material> material)
-      : v1(v1), v2(v2), v3(v3), uv1(uv1), uv2(uv2), uv3(uv3), material(material)
+      : v1(v1), v2(v2), v3(v3), material(material)
   {
-    u = v2 - v1;
-    v = v3 - v1;
+    u = v2.position - v1.position;
+    v = v3.position - v1.position;
     vec3 n = cross(u, v);
     w = n / dot(n, n);
-    normal = unit_vector(n);
-    D = dot(normal, v1);
+    // normal = unit_vector(n);
     set_bounding_box();
   }
 
   virtual void set_bounding_box()
   {
     // Bottom left to top right (assuming positive octant)
-    aabb bbox_diagonal1 = aabb(v1, v1 + u + v);
+    aabb bbox_diagonal1 = aabb(v1.position, v1.position + u + v);
     // Top left to bottom right (same assumption)
-    aabb bbox_diagonal2 = aabb(v1 + u, v1 + v);
+    aabb bbox_diagonal2 = aabb(v1.position + u, v1.position + v);
     bbox = aabb(bbox_diagonal1, bbox_diagonal2);
   }
 
@@ -49,7 +44,7 @@ public:
       return false;
 
     float f = 1 / a;
-    vec3 s = r.origin() - v1;
+    vec3 s = r.origin() - v1.position;
 
     float ud = f * dot(s, h);
     if (ud < 0 || ud > 1)
@@ -64,7 +59,9 @@ public:
 
     point3 intersection = r.at(t);
     float wd = 1 - ud - vd;
-    vec3 uv = wd * uv1 + ud * uv2 + vd * uv3;
+    vec3 uv = wd * v1.uv + ud * v2.uv + vd * v3.uv;
+    vec3 normal = wd * v1.normal + ud * v2.normal + vd * v3.normal;
+    // vec3 normal = unit_vector(cross(u, v));
 
     hit_record.u = uv.x();
     hit_record.v = uv.y();
@@ -76,20 +73,15 @@ public:
   }
 
 private:
-  point3 v1;
-  point3 v2;
-  point3 v3;
+  vertex v1;
+  vertex v2;
+  vertex v3;
 
   vec3 u;
   vec3 v;
-
-  vec3 uv1;
-  vec3 uv2;
-  vec3 uv3;
-
-  vec3 normal;
-  double D;
   vec3 w; // for plane coordinate transformations
+
+  // vec3 normal;
 
   shared_ptr<material> material;
 

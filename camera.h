@@ -35,7 +35,7 @@ public:
             }
         }
 
-        int num_chunks = 30;
+        int num_chunks = 20;
         int rows_per_chunk = int(image_height / num_chunks);
         int chunk_start = chunk == -1 ? 0 : rows_per_chunk * chunk;
         int chunk_end = chunk == -1               ? image_height

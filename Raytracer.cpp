@@ -596,7 +596,9 @@ int simple_gltf(int chunk)
 
     auto white = make_shared<lambertian>(.73);
     // bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "gltf/2CylinderEngine.gltf");
-    bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "gltf/uv.gltf");
+    // bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "gltf/uv.gltf");
+    // bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "gltf/sphere.gltf");
+    bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "gltf/snowman.gltf");
     // bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "gltf/book.gltf");
     // bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "gltf/axes.gltf");
 

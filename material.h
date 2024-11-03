@@ -48,6 +48,35 @@ private:
   shared_ptr<texture> tex;
 };
 
+/*
+class open_pbr_bsdf : public material
+{
+public:
+  open_pbr_bsdf(texture *albedo, texture *normal, texture *metallic, texture *roughness, texture *ao) : albedo(albedo), normal(normal), metallic(metallic), roughness(roughness), ao(ao) {}
+  bool scatter(const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered) const override
+  {
+    vec3 scatter_direction = rec.normal + random_unit_vector();
+    if (scatter_direction.near_zero())
+    {
+      scatter_direction = rec.normal;
+    }
+    scattered = ray(rec.p, scatter_direction, r_in.time());
+    attenuation = albedo->value(rec.u, rec.v, rec.p);
+    return true;
+  }
+  color emitted(const ray &r_in, const hit_record &rec, double u, double v, const point3 &p) const override
+  {
+    return color(0);
+  }
+
+private:
+  texture *albedo;
+  texture *normal;
+  texture *metallic;
+  texture *roughness;
+  texture *ao;
+};*/
+
 class metal : public material
 {
 public:
